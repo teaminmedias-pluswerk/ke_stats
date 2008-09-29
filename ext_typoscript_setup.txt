@@ -1,0 +1,35 @@
+plugin.tx_kestats_pi1 {
+	ignorePages = 
+	maxRefererNameLength = 50
+
+	# enable all statistic types (set this to 0 to disable them)
+	enableStatisticsPages = 1
+	enableStatisticsTracking = 1
+	enableStatisticsExtensions = 1
+
+	# setup statistics for tt_news
+	# use this configuration as an example for other extensions
+	
+	# format: registerExtension.EXTENSIONKEY = EXTENSIONNAME
+	registerExtension.tt_news = News
+
+	# name of the table
+	# the table has to be defined in TCA (all tables in TYPO3 normally are)
+	registerExtension.tt_news.table = tt_news
+
+	# name of the db field containing the title of the element
+	registerExtension.tt_news.titleField = title
+
+	# name of the db field containing the uid of the element
+	registerExtension.tt_news.uidField = uid
+
+	# name of the db field containing the pid of the element
+	registerExtension.tt_news.pidField = pid
+
+	# GET-parameter given in the frontend to display the singleview of the element
+	registerExtension.tt_news.uidParameter = tt_news
+
+	# wrap the uidParameter into this piVar array name
+	# example for tt_news: index.php?id=99&tx_ttnews[tt_news]=99
+	registerExtension.tt_news.uidParameterWrap = tx_ttnews
+}

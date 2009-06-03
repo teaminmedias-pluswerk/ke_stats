@@ -32,4 +32,31 @@ plugin.tx_kestats_pi1 {
 	# wrap the uidParameter into this piVar array name
 	# example for tt_news: index.php?id=99&tx_ttnews[tt_news]=99
 	registerExtension.tt_news.uidParameterWrap = tx_ttnews
+
+	# setup statistics for ke_troubletickets
+	registerExtension.ke_troubletickets = Troubletickets
+	registerExtension.ke_troubletickets.table = tx_ketroubletickets_tickets
+	registerExtension.ke_troubletickets.titleField = title
+	registerExtension.ke_troubletickets.uidField = uid
+	registerExtension.ke_troubletickets.pidField = pid
+	registerExtension.ke_troubletickets.uidParameter = showUid
+	registerExtension.ke_troubletickets.uidParameterWrap = tx_ketroubletickets_pi1
+
+	# setup statistics for ke_yac
+	registerExtension.ke_yac = Calendar
+	registerExtension.ke_yac.table = tx_keyac_dates
+	registerExtension.ke_yac.titleField = title
+	registerExtension.ke_yac.uidField = uid
+	registerExtension.ke_yac.pidField = pid
+	registerExtension.ke_yac.uidParameter = showUid
+	registerExtension.ke_yac.uidParameterWrap = tx_keyac_pi1
+
+	# setup statistics for commerce
+	registerExtension.commerce = Products
+	registerExtension.commerce.table = tx_commerce_products
+	registerExtension.commerce.titleField = title
+	registerExtension.commerce.uidField = uid
+	registerExtension.commerce.pidField = pid
+	registerExtension.commerce.uidParameter = showUid
+	registerExtension.commerce.uidParameterWrap = tx_commerce_pi1
 }

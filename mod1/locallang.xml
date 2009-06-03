@@ -68,7 +68,7 @@
 			<label index="category_visits_day_of_week_feusers">day of week</label>
 			<label index="category_visits_hour_of_day_feusers">hour of day</label>
 
-			<label index="category_hosts">hosts (slow))</label>
+			<label index="category_hosts">hosts</label>
 			<label index="list_full">Monthly progression</label>
 			<label index="list_full_csv">Download monthly progression</label>
 			<label index="list_details">Single month details</label>
@@ -115,6 +115,9 @@
 
 			<label index="extension_tt_news">News</label>
 			<label index="extension_naw_securedl">Downloads</label>
+			<label index="extension_commerce">Products</label>
+			<label index="extension_ke_yac">Calendar</label>
+			<label index="extension_ke_troubletickets">Troubletickets</label>
 
 			<label index="header_line_number">Line</label>
 			<label index="header_element_title">Name</label>
@@ -140,7 +143,7 @@
 			<label index="please_select_page">Please select a page in the pagetree.</label>
 
 			<label index="iplogging_is_disabled">IP-Logging is disabled. You may enable it in the extension manager.</label>
-			<label index="tracking_is_disabled">Tracking is disabled. You may enable it in TS-Setup.</label>
+			<label index="tracking_is_disabled">Tracking is disabled. You may enable it in the extension-manager.</label>
 		</languageKey>
 		<languageKey index="de" type="array">
 			<label index="weekday_0">Sonntag</label>
@@ -206,7 +209,7 @@
 			<label index="category_visits_day_of_week_feusers">Wochentag</label>
 			<label index="category_visits_hour_of_day_feusers">Tageszeit</label>
 
-			<label index="category_hosts">Hosts (langsam)</label>
+			<label index="category_hosts">Hosts</label>
 			<label index="list_full">Monatlicher Verlauf</label>
 			<label index="list_full_csv">Herunterladen der monatlichen Verlaufsdaten</label>
 			<label index="list_details">Monats-Detailauswertung</label>
@@ -255,6 +258,10 @@
 			<label index="type_pages_visits_monthly_fe_users">Besuche (visits) pro Monat, nur eingeloggte Benutzer</label>
 
 			<label index="extension_tt_news">News</label>
+			<label index="extension_naw_securedl">Downloads</label>
+			<label index="extension_commerce">Produkte</label>
+			<label index="extension_ke_yac">Kalender</label>
+			<label index="extension_ke_troubletickets">Aufgaben</label>
 
 			<label index="header_line_number">Zeile</label>
 			<label index="header_element_title">Bezeichnung</label>
@@ -283,7 +290,7 @@
 			<label index="please_select_page">Bitte wählen Sie im Seitenbaum eine Seite aus.</label>
 
 			<label index="iplogging_is_disabled">IP-Logging ist deaktiviert. Sie können es im Extension-Manager aktivieren.</label>
-			<label index="tracking_is_disabled">Die Tracking-Funktion ist deaktiviert. Sie können sie im TS-Setup aktivieren.</label>
+			<label index="tracking_is_disabled">Die Tracking-Funktion ist deaktiviert. Sie können sie im Extension-Manager aktivieren.</label>
 		</languageKey>
 	</data>
 </T3locallang>

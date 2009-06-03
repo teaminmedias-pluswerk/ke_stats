@@ -180,9 +180,10 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			if (!isset($this->extConf['enableIpLogging'])) {
 				$this->extConf['enableIpLogging'] = 0;
 			}
-		if (!isset($this->extConf['enableTracking'])) {
-			$this->extConf['enableTracking'] = 0;
-		}
+
+			if (!isset($this->extConf['enableTracking'])) {
+				$this->extConf['enableTracking'] = 0;
+			}
 
 			// Init tab menus
 			$this->tabmenu->initMenu('type','pages');
@@ -199,8 +200,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			// this is very slow, so we assume having every type available here 
 			/*
 			$typesArray = array();
-			$where = '('.$this->tablename.'.type="extension" AND '.$this->tablename.'.element_pid IN ('.$this->pagelist.')'. ')';
-			$where .= ' OR ('.$this->tablename.'.type!="extension" AND '.$this->tablename.'.element_uid IN ('.$this->pagelist.')'. ')';
+			$where = '('.$this->tablename.'.type=\'extension\' AND '.$this->tablename.'.element_pid IN ('.$this->pagelist.')'. ')';
+			$where .= ' OR ('.$this->tablename.'.type!=\'extension\' AND '.$this->tablename.'.element_uid IN ('.$this->pagelist.')'. ')';
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('type',$this->tablename,$where,'type');
 
 			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
@@ -217,13 +218,20 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				$typesArray['extension'] = $value;
 			}
 			*/
-			// this is a lot faster, it just means that you get an empty table on pages where you click on "extension" and there are no elements
-			$typesArray = array(STAT_TYPE_PAGES => $LANG->getLL('type_' . STAT_TYPE_PAGES), 
-				STAT_TYPE_TRACKING => $LANG->getLL('type_' . STAT_TYPE_TRACKING), 
+
+			// this is a lot faster, it just means that you get an empty table
+			// on pages where you click on "extension" and there are no
+			// elements
+			$typesArray = array(
+				STAT_TYPE_PAGES => $LANG->getLL('type_' . STAT_TYPE_PAGES), 
 				STAT_TYPE_EXTENSION => $LANG->getLL('type_' . STAT_TYPE_EXTENSION),
 				'csvdownload' => $LANG->getLL('csvdownload')
 			);
 
+			// Put "Tracking" tab at the end display it only if tracking is activated
+			if ($this->extConf['enableTracking']) {
+				$typesArray[STAT_TYPE_TRACKING] = $LANG->getLL('type_' . STAT_TYPE_TRACKING);
+			}
 
 			// the query to filter the elements based on the selected page in the pagetree 
 			// extension elements are filtered by their pid 
@@ -348,7 +356,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 					// find out what extensions we have statistics for (db field "category")
 					$extensionTypesArray = array();
 					$this->allowedExtensionTypes = array();
-					$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('category',$this->tablename,'type="'.STAT_TYPE_EXTENSION.'"'.$this->subpages_query,'category');
+					$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('category',$this->tablename,'type=\''.STAT_TYPE_EXTENSION.'\''.$this->subpages_query,'category');
 					if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
 						while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
 							// get the tabname for the extension from page TSconfig
@@ -372,10 +380,10 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			if ($this->id) {
 				$row = t3lib_BEfunc::getRecord('pages',$this->id);
 				$pagetitle = t3lib_BEfunc::getRecordTitle('pages',$row,1);
-				$this->content .= '<p style="margin-top:10px;">'.$LANG->getLL('statistics_for').' <strong>'.$pagetitle.'</strong> '.$LANG->getLL('and_subpages').'</p>';
+				$this->content .= '<p style=\'margin-top:10px;\'>'.$LANG->getLL('statistics_for').' <strong>'.$pagetitle.'</strong> '.$LANG->getLL('and_subpages').'</p>';
 				$this->addCsvCol($LANG->getLL('statistics_for').' '.$pagetitle.' '.$LANG->getLL('and_subpages'));
 			} else {
-				$this->content .= '<p style="margin-top:10px;">'.$LANG->getLL('all_pages').'</p>';
+				$this->content .= '<p style=\'margin-top:10px;\'>'.$LANG->getLL('all_pages').'</p>';
 				$this->addCsvCol($LANG->getLL('all_pages'));
 			}
 
@@ -395,7 +403,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 			// Render links for CSV-Download
 			if ($this->tabmenu->getSelectedValue('type') == 'csvdownload' && !$this->csvOutput) {
-				$this->content .= '<div style="clear:both;">&nbsp;</div>';
+				$this->content .= '<div style=\'clear:both;\'>&nbsp;</div>';
 				$this->content .= '<h2>' . $GLOBALS['LANG']->getLL('list_full_csv') . '</h2>';
 
 				/*
@@ -598,8 +606,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		}
 
 		// is there more than one element type?
-		$where_clause = 'type="'.$statType.'"';
-		$where_clause .= ' AND category="'.$statCategory.'"';
+		$where_clause = 'type=\''.$statType.'\'';
+		$where_clause .= ' AND category=\''.$statCategory.'\'';
 		$where_clause .= $this->subpages_query;
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('element_type',$this->tablename,$where_clause,'element_type');
 		if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 1) {
@@ -611,8 +619,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		} 
 
 		// is there more than one element language?
-		$where_clause = 'type="'.$statType.'"';
-		$where_clause .= ' AND category="'.$statCategory.'"';
+		$where_clause = 'type=\''.$statType.'\'';
+		$where_clause .= ' AND category=\''.$statCategory.'\'';
 		$where_clause .= $this->subpages_query;
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('element_language',$this->tablename,$where_clause,'element_language');
 		if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 1) {
@@ -1058,8 +1066,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 					$useCache = false;
 				}
 
-				$where_clause = 'type="'.$statType.'"';
-				$where_clause .= ' AND category="'.$statCategory.'"';
+				$where_clause = 'type=\''.$statType.'\'';
+				$where_clause .= ' AND category=\''.$statCategory.'\'';
 				$where_clause .= ' AND year='.$year.'';
 				$where_clause .= ' AND month='.$month.'';
 				if (intval($this->tabmenu->getSelectedValue('element_language')) >= 0) {
@@ -1210,8 +1218,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		$fromToArray['to_month'] = 0;
 		$fromToArray['to_year'] = 0;
 
-		$where_clause = 'type="'.$statType.'"';
-		$where_clause .= ' AND category="'.$statCategory.'"';
+		$where_clause = 'type=\''.$statType.'\'';
+		$where_clause .= ' AND category=\''.$statCategory.'\'';
 		$where_clause .= $this->subpages_query;
 
 		// get first entry

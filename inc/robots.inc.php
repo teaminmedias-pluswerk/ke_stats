@@ -168,7 +168,10 @@ $GLOBALS['robots'] = array(/*{{{*/
 	'EnaBot/' => 'EnaBot',
 	'OpenAcoon' => 'OpenAcoon (www.openacoon.de)',
 	'll_bot/Nutch' => 'll_bot/Nutch (LinkLift Web Crawler)',
-	'Google-Sitemaps' => 'Google-Sitemaps'
+	'Google-Sitemaps' => 'Google-Sitemaps',
+	'Yandex' => 'Yandex/',
+	'hbtronix.spider.' => 'hbtronix Spider',
+	'Acoon-Robot' => 'Acoon-Robot',
+	'WebAlta Crawler/' => 'WebaAlta Crawler'
 );/*}}}*/
-
 ?>

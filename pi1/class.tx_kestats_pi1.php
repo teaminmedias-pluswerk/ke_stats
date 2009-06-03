@@ -173,8 +173,8 @@ class tx_kestats_pi1 extends tslib_pibase {
 		if (!$this->statData['is_robot'] && $this->extConf['enableTracking']) {
 
 			// get the uid of the initial entry
-			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid',$this->tableName,'element_title="'.$GLOBALS['TSFE']->fe_user->id.'"');
-			$this->debug_queries[] = $GLOBALS['TYPO3_DB']->SELECTquery('uid',$this->tableName,'element_title="'.$GLOBALS['TSFE']->fe_user->id.'"');
+			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid',$this->tableName,'element_title=\''.$GLOBALS['TSFE']->fe_user->id.'\'');
+			$this->debug_queries[] = $GLOBALS['TYPO3_DB']->SELECTquery('uid',$this->tableName,'element_title=\''.$GLOBALS['TSFE']->fe_user->id.'\'');
 
 			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) == 0) {
 				// this is the first hit of this user
@@ -183,8 +183,8 @@ class tx_kestats_pi1 extends tslib_pibase {
 
 				// get the uid of the initial entry
 				// don't use sql_insert_id, because there may have been more insert operations in between
-				$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid',$this->tableName,'element_title="'.$GLOBALS['TSFE']->fe_user->id.'"');
-				$this->debug_queries[] = $GLOBALS['TYPO3_DB']->SELECTquery('uid',$this->tableName,'element_title="'.$GLOBALS['TSFE']->fe_user->id.'"');
+				$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid',$this->tableName,'element_title=\''.$GLOBALS['TSFE']->fe_user->id.'\'');
+				$this->debug_queries[] = $GLOBALS['TYPO3_DB']->SELECTquery('uid',$this->tableName,'element_title=\''.$GLOBALS['TSFE']->fe_user->id.'\'');
 				$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
 				$parent_uid = $row['uid'];
 
@@ -228,7 +228,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 			$this->increaseCounter(CATEGORY_TRACKING_PAGES,'element_uid,element_pid,element_language,element_type,year,month',$element_title,$element_uid,$element_pid,$element_language,$element_type,STAT_TYPE_TRACKING,$parent_uid);
 
 			// delete older tracking entries
-			$where = 'type = "'.STAT_TYPE_TRACKING.'" AND tstamp < '. ($this->now - $this->keepTrackingEntriesDays * 24 * 60 * 60);
+			$where = 'type = \''.STAT_TYPE_TRACKING.'\' AND tstamp < '. ($this->now - $this->keepTrackingEntriesDays * 24 * 60 * 60);
 			$res = $GLOBALS['TYPO3_DB']->exec_DELETEquery($this->tableName,$where);
 			$this->debug_queries[] = $GLOBALS['TYPO3_DB']->DELETEquery($this->tableName,$where);
 			//debug ('deleting tracking entries older than '.strftime('%d.%m.%y %R',($this->now - $this->keepTrackingEntriesDays * 24 * 60 * 60)));
@@ -439,13 +439,13 @@ class tx_kestats_pi1 extends tslib_pibase {
 		$compareData['element_language'] = $element_language;
 		$compareData['element_type'] = $element_type;
 
-		$where_clause = ' type="'.$stat_type.'"';
-		$where_clause .= ' AND category="'.$category.'"';
+		$where_clause = ' type=\''.$stat_type.'\'';
+		$where_clause .= ' AND category=\''.$category.'\'';
 		foreach (explode(',',$compareFieldList) as $field) {
 			// is the field a string field, or an integer?
 			if (in_array($field,array('element_title','type'))) {
 				// string field
-				$where_clause .= ' AND '.$field.'="'.$compareData[$field].'"';
+				$where_clause .= ' AND '.$field.'=\''.$compareData[$field].'\'';
 			} else {
 				// integer field
 				$where_clause .= ' AND '.$field.'='.$compareData[$field];
@@ -617,7 +617,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 
 		$header = "MIME-Version: 1.0\n";
 		$header .= "Content-type: text/html; charset=utf-8\n";
-		$header .= "From: KENNZIFFER DEBUG <debug@kennziffer.com>\n"; 
+		$header .= "From: ke_stats DEBUG\n"; 
 
 		mail($this->debug_email,$subject,$content,$header);
 	}/*}}}*/

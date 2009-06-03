@@ -38,7 +38,8 @@ $GLOBALS['search_engines'] = array(/*{{{*/
 	'search.yahoo' => 'Yahoo',
 	'ixquick' => 'Ixquick',
 	'ok.hu'	=> 'ok.hu',
-	'suche.t-online.de' => 't-online.de'
+	'suche.t-online.de' => 't-online.de',
+	'suche.freenet.de' => 'freenet.de'
 );/*}}}*/
 
 ?>

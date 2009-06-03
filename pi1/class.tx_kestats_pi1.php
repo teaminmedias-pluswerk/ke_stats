@@ -102,11 +102,13 @@ class tx_kestats_pi1 extends tslib_pibase {
 
 		// get the extension-manager configuration 
 		$this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['ke_stats']);
-		if (!isset($this->extConf['enableIpLogging'])) {
-			$this->extConf['enableIpLogging'] = 0;
-		}
-		if (!isset($this->extConf['enableTracking'])) {
-			$this->extConf['enableTracking'] = 0;
+		$this->extConf['enableIpLogging'] = $this->extConf['enableIpLogging'] ? 1 : 0;
+		$this->extConf['enableTracking'] = $this->extConf['enableTracking'] ? 1 : 0;
+		$this->extConf['ignoreBackendUsers'] = $this->extConf['ignoreBackendUsers'] ? 1 : 0;
+
+		// do nothing if a backend user is logged in and ignoreBackendUsers is set
+		if ($this->extConf['ignoreBackendUsers'] && $GLOBALS['TSFE']->beUserLogin) {
+			return '';
 		}
 
 		//***********************************************
@@ -552,17 +554,23 @@ class tx_kestats_pi1 extends tslib_pibase {
 		// send mail if operating system is unknown
 		if (!$this->statData['is_robot']) {
 
-			if ($this->statData['operating_system'] == UNKNOWN_OPERATING_SYSTEM && $this->statData['http_user_agent']!=EMPTY_USER_AGENT && $this->debug_mail_if_unknown) {
+			if ($this->statData['operating_system'] == UNKNOWN_OPERATING_SYSTEM 
+				&& $this->statData['http_user_agent'] != EMPTY_USER_AGENT 
+				&& $this->debug_mail_if_unknown
+				) {
 				$this->debugMail($this->statData,'[ke_stats] Unknown Operating System');
 			}
 			// send mail if user agent is unknown
-			if ($this->debug_mail_if_unknown && $this->statData['user_agent_name'] == UNKNOWN_USER_AGENT && $this->statData['http_user_agent']!=EMPTY_USER_AGENT) {
+			if ($this->debug_mail_if_unknown 
+				&& $this->statData['user_agent_name'] == UNKNOWN_USER_AGENT 
+				&& $this->statData['http_user_agent'] != EMPTY_USER_AGENT
+				) {
 				$this->debugMail($this->statData,'[ke_stats] Unknown User Agent');
 			}
 		}
 
 		return 0;
-		}/*}}}*/
+	}/*}}}*/
 
 
 	/**

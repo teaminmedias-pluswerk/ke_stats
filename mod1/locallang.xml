@@ -218,7 +218,7 @@
 
 			<label index="type_pages">Seiten</label>
 			<label index="type_tracking">Live Tracking</label>
-			<label index="type_extension">Extensions</label>
+			<label index="type_extension">Erweiterungen</label>
 			<label index="csvdownload">CSV-Download</label>
 			<label index="csvdownload_filename">TYPO3-Statistik_###DATE###.csv</label>
 			<label index="csvdownload_statistics_for_month">Statistik für </label>

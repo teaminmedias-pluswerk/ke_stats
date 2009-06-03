@@ -94,6 +94,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 		$element_uid = $GLOBALS['TSFE']->id;
 		$element_pid = $GLOBALS['TSFE']->page['pid'];
 		$element_type = $GLOBALS['TSFE']->type;
+
 		// get "real" pagetitle (not touched by any extension)
 		// $element_title = $GLOBALS['TSFE']->page['title'];
 		$element_title = $GLOBALS['TSFE']->rootLine[sizeof($GLOBALS['TSFE']->rootLine)-1]['title'];

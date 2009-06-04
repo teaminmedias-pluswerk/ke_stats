@@ -6,3 +6,6 @@ enableTracking = 0
 
 # cat=basic//130; type=boolean; label= Ignore Backend-Users: Don't count anything if a backend user is logged in.
 ignoreBackendUsers = 1
+
+# cat=basic//130; type=boolean; label= Asynchronous data refreshing: Increases performance! But needs a cronjob which updates the database table nightly. Please read the manual.
+asynchronousDataRefreshing = 0

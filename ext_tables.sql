@@ -40,3 +40,15 @@ CREATE TABLE tx_kestats_cache (
 	
 	PRIMARY KEY (uid)
 );
+
+#
+# Table structure for table 'tx_kestats_statdata'
+#
+CREATE TABLE tx_kestats_queue (
+	uid int(11) NOT NULL auto_increment,
+	tstamp int(11) DEFAULT '0' NOT NULL,
+	data text NOT NULL,
+	generaldata text NOT NULL,
+	
+	PRIMARY KEY (uid)
+);

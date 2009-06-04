@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007 Christian Bülter <buelter@kennziffer.com>
+*  (c) 2007-2009 Christian Bülter <buelter@kennziffer.com>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -22,6 +22,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
+define(UPDATED_UNTIL_DATEFORMAT, 'd.m.Y, H:i:s');
 
 	// DEFAULT initialization of a module [BEGIN]
 unset($MCONF);
@@ -42,6 +43,8 @@ require_once(PATH_t3lib.'class.t3lib_page.php');
 require_once(PATH_t3lib.'class.t3lib_tstemplate.php');
 require_once(PATH_t3lib.'class.t3lib_tsparser_ext.php');
 
+// shared library
+require_once(PATH_BE_KESTATS.'lib/class.tx_kestats_lib.php');
 
 /**
  * Module 'Statistics' for the 'ke_stats' extension.
@@ -54,6 +57,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	var $pageinfo;
 	var $tablename = 'tx_kestats_statdata';
 	var $tablenameCache = 'tx_kestats_cache';
+	var $tablenameQueue = 'tx_kestats_queue';
 	var $maxLengthURLs = 80;
 	var $maxLengthTableContent = 80;
 	var $showTrackingResultNumbers = array(10 => '10', 50 => '50', 100 => '100', 200 => '200');
@@ -88,6 +92,9 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 		// check, if we should render a csv-table
 		$this->csvOutput = (t3lib_div::_GET('format') == 'csv') ? true : false;
+
+		// instantiate the shared library
+		$this->kestatslib = t3lib_div::makeInstance('tx_kestats_lib');
 
 		// get the module TSconfig
 		// $this->modConf = t3lib_BEfunc::getModTSconfig($this->id);
@@ -177,13 +184,10 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 			// get the extension-manager configuration 
 			$this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['ke_stats']);
-			if (!isset($this->extConf['enableIpLogging'])) {
-				$this->extConf['enableIpLogging'] = 0;
-			}
-
-			if (!isset($this->extConf['enableTracking'])) {
-				$this->extConf['enableTracking'] = 0;
-			}
+			$this->extConf['enableIpLogging'] = $this->extConf['enableIpLogging'] ? 1 : 0;
+			$this->extConf['enableTracking'] = $this->extConf['enableTracking'] ? 1 : 0;
+			$this->extConf['ignoreBackendUsers'] = $this->extConf['ignoreBackendUsers'] ? 1 : 0;
+			$this->extConf['asynchronousDataRefreshing'] = $this->extConf['asynchronousDataRefreshing'] ? 1 : 0;
 
 			// Init tab menus
 			$this->tabmenu->initMenu('type','pages');
@@ -1019,6 +1023,14 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				$content .= $this->renderTable($GLOBALS['LANG']->getLL('type_extension'),$columns,$resultArray,$this->tabmenu->getSelectedValue('extension_type',$this->allowedExtensionTypes));
 			break;
 		}
+
+		// Print information about to what time the update has been made (only if asynchronousDataRefreshing is activated)
+		if ($this->extConf['asynchronousDataRefreshing']) {
+			$oldestEntry = $this->kestatslib->getOldestQueueEntry();
+			if ($oldestEntry) {
+				$content .= '<p class="update_information">' . $GLOBALS['LANG']->getLL('updated_until') . date(UPDATED_UNTIL_DATEFORMAT, $oldestEntry['tstamp']) . '<p>';
+			}
+		}
 		return $content;
 	}/*}}}*/
 
@@ -1231,6 +1243,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		} else {
 			return $fromToArray;
 		}
+
 		// get last entry
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*',$this->tablename,$where_clause,'','uid DESC','1');
 		if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
@@ -1240,6 +1253,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		} else {
 			return $fromToArray;
 		}
+
 		return $fromToArray;
 	}/*}}}*/
 
@@ -1531,6 +1545,12 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	padding:2px;
 }
 
+.update_information {
+	font-style: italic;
+	text-align: right;
+	font-size:9px;
+}
+
 table.ke-stats-table {
 	color: #7F7F7F;
 	font-size: 10px;
@@ -1736,4 +1756,3 @@ $SOBE->main();
 $SOBE->printContent();
 
 ?>
-

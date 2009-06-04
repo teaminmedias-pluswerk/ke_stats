@@ -144,6 +144,8 @@
 
 			<label index="iplogging_is_disabled">IP-Logging is disabled. You may enable it in the extension manager.</label>
 			<label index="tracking_is_disabled">Tracking is disabled. You may enable it in the extension-manager.</label>
+
+			<label index="updated_until">Updated until: </label>
 		</languageKey>
 		<languageKey index="de" type="array">
 			<label index="weekday_0">Sonntag</label>
@@ -291,6 +293,7 @@
 
 			<label index="iplogging_is_disabled">IP-Logging ist deaktiviert. Sie können es im Extension-Manager aktivieren.</label>
 			<label index="tracking_is_disabled">Die Tracking-Funktion ist deaktiviert. Sie können sie im Extension-Manager aktivieren.</label>
+			<label index="updated_until">Aktualisiert bis: </label>
 		</languageKey>
 	</data>
 </T3locallang>

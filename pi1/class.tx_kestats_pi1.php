@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007 Christian Bülter <buelter@kennziffer.com>
+*  (c) 2007-2009 Christian Bülter <buelter@kennziffer.com>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,6 +28,7 @@ require_once(PATH_BE_KESTATS.'inc/robots.inc.php');
 require_once(PATH_BE_KESTATS.'inc/search_engines.inc.php');
 require_once(PATH_BE_KESTATS.'inc/operating_systems.inc.php');
 require_once(PATH_BE_KESTATS.'inc/constants.inc.php');
+require_once(PATH_BE_KESTATS.'lib/class.tx_kestats_lib.php');
 
 /**
  * Plugin 'statistics counter' for the 'ke_stats' extension.
@@ -39,21 +40,27 @@ require_once(PATH_BE_KESTATS.'inc/constants.inc.php');
 class tx_kestats_pi1 extends tslib_pibase {
 	// Same as class name
 	var $prefixId = 'tx_kestats_pi1';		
+
 	// Path to this script relative to the extension dir.
 	var $scriptRelPath = 'pi1/class.tx_kestats_pi1.php';	
+
 	// The extension key.
 	var $extKey = 'ke_stats';	
+
+	// The main table.
 	var $tableName = 'tx_kestats_statdata';
-	var $statData = array();
-	var $timeFields='year,month';
-	// keep the tracking entries only a certain number of days, delete them after that
+
+	// keep the tracking entries only a certain number of days, delete them after that.
 	var $keepTrackingEntriesDays = 60;
 
 	// for debugging purposes:
 	var $debug_email = '';
 	var $debug_mail_if_unknown = 0;
 	var $debug_mail_queries = 0;
+	var $debug_timetracking = 1;
 	var $debug_queries = array();
+	var $timetracking = array();
+	var $timetracking_start = 0;
 
 	/**
 	 * The main method of the PlugIn.
@@ -72,11 +79,19 @@ class tx_kestats_pi1 extends tslib_pibase {
 		$this->search_engines = $GLOBALS['search_engines'];
 		$this->operating_systems = $GLOBALS['operating_systems'];
 		$this->now = time();
-		$lcObj=t3lib_div::makeInstance('tslib_cObj');
+		$lcObj = t3lib_div::makeInstance('tslib_cObj');
+
+		// instantiate the shared library
+		$this->kestatslib = t3lib_div::makeInstance('tx_kestats_lib');
 
 		// ignore this page?
 		if ($this->conf['ignorePages'] && t3lib_div::inList($this->conf['ignorePages'],$GLOBALS['TSFE']->id)) {
 			return '';
+		}
+
+		// init timetracking 
+		if ($this->debug_timetracking) {
+			$this->timetracking_start = t3lib_div::milliseconds();
 		}
 
 		// ignore calls without user agent where the remote address is like the server address
@@ -108,6 +123,8 @@ class tx_kestats_pi1 extends tslib_pibase {
 
 		// do nothing if a backend user is logged in and ignoreBackendUsers is set
 		if ($this->extConf['ignoreBackendUsers'] && $GLOBALS['TSFE']->beUserLogin) {
+			$this->trackTime('end');
+			$this->logTimeTracking();
 			return '';
 		}
 
@@ -234,7 +251,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 			$where = 'type = \''.STAT_TYPE_TRACKING.'\' AND tstamp < '. ($this->now - $this->keepTrackingEntriesDays * 24 * 60 * 60);
 			$res = $GLOBALS['TYPO3_DB']->exec_DELETEquery($this->tableName,$where);
 			$this->debug_queries[] = $GLOBALS['TYPO3_DB']->DELETEquery($this->tableName,$where);
-			//debug ('deleting tracking entries older than '.strftime('%d.%m.%y %R',($this->now - $this->keepTrackingEntriesDays * 24 * 60 * 60)));
+			//debug('deleting tracking entries older than '.strftime('%d.%m.%y %R',($this->now - $this->keepTrackingEntriesDays * 24 * 60 * 60)));
 			//debug($GLOBALS['TYPO3_DB']->sql_affected_rows.' were affected by delete-query.');
 		}
 
@@ -349,8 +366,102 @@ class tx_kestats_pi1 extends tslib_pibase {
 		if ($this->debug_mail_queries) {
 			$this->debugMail($this->debug_queries);
 		}
+
+		$this->trackTime('end');
+		$this->logTimeTracking();
 		
 		return '';
+	}/*}}}*/
+
+	/**
+	 * initApi 
+	 *
+	 * init the API (will be only called if an extension from outside wants to
+	 * call ke_stats, does not call main())
+	 * 
+	 * example for usage of the API:
+	 *
+	 * $keStatsObj = t3lib_div::getUserObj('EXT:ke_stats/pi1/class.tx_kestats_pi1.php:tx_kestats_pi1');
+	 * $keStatsObj->initApi();
+	 * $keStatsObj->increaseCounter('my_extension','element_title,year,month',$title_of_the_element_i_want_to_count,$uid_of_the_element_i_want_to_count,$pid_where_to_save_the_data,$language_uid_of_the_element_i_want_to_count,0,'extension');
+	 * unset($keStatsObj);
+	 *
+	 * @access public
+	 * @return void
+	 */
+	function initApi() {
+		// collect time data
+		$this->now = time();
+		$this->getTimeData();
+
+		// instantiate the shared library
+		$this->kestatslib = t3lib_div::makeInstance('tx_kestats_lib');
+	}
+
+	/**
+	 * Wrapper for kestatslib->increaseCounter
+	 * 
+	 * @param string $category 
+	 * @param string $compareFieldList 
+	 * @param string $element_title 
+	 * @param int $element_uid 
+	 * @param int $element_pid 
+	 * @param int $element_language 
+	 * @param int $element_type 
+	 * @param string $stat_type 
+	 * @param int $parent_uid 
+	 * @access public
+	 * @return void
+	 */
+	function increaseCounter(
+						$category,
+						$compareFieldList,
+						$element_title='',
+						$element_uid=0,
+						$element_pid=0,
+						$element_language=0,
+						$element_type=0,
+						$stat_type=STAT_TYPE_PAGES,
+						$parent_uid=0
+						) {
+
+		// transfer the general statdate to the shared library
+		$this->kestatslib->statData = $this->statData;
+		$this->kestatslib->increaseCounter(
+						$category,
+						$compareFieldList,
+						$element_title,
+						$element_uid,
+						$element_pid,
+						$element_language,
+						$element_type,
+						$stat_type,
+						$parent_uid);
+	}
+
+	/**
+	 * trackTime 
+	 * 
+	 * @param string $desc 
+	 * @access public
+	 * @return void
+	 */
+	function trackTime($desc = '') {/*{{{*/
+		if ($this->debug_timetracking) {
+			$this->timetracking[$desc] = t3lib_div::milliseconds() - $this->timetracking_start;
+		}
+	}/*}}}*/
+
+	/**
+	 * logTimeTracking 
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	function logTimeTracking() {/*{{{*/
+		if ($this->debug_timetracking) {
+			t3lib_div::devLog('timetracking', $this->extKey, 0, $this->timetracking);
+		}
 	}/*}}}*/
 
 	/**
@@ -367,106 +478,6 @@ class tx_kestats_pi1 extends tslib_pibase {
 	}/*}}}*/
 
 	/**
-	 * Increases a statistics counter for the given $category.
-	 * If no counter exists that matches all fields the $compareFieldList, a new one is created.
-	 * $compareFieldList is a comma-separated list.
-	 * 
-	 * @param string $category 
-	 * @param string $compareFieldList 
-	 * @param int $element_uid 
-	 * @param int $element_pid 
-	 * @param string $element_title 
-	 * @param int $element_language 
-	 * @return void
-	 */
-	function increaseCounter($category,$compareFieldList,$element_title='',$element_uid=0,$element_pid=0,$element_language=0,$element_type=0,$stat_type=STAT_TYPE_PAGES,$parent_uid=0) {/*{{{*/
-		$statEntry = $this->getStatEntry($category,$compareFieldList,$element_uid,$element_pid,$element_title,$element_language,$element_type,$stat_type,$parent_uid);
-		// create a new entry if the data is unique, or this entry referers to another (user tracking)
-		if (count($statEntry) == 0 || $parent_uid > 0) {
-			// generate new counter
-			$insertFields = array();
-			$insertFields['type'] = $stat_type;
-			$insertFields['category'] = $category;
-			$insertFields['element_uid'] = $element_uid;
-			$insertFields['element_pid'] = $element_pid;
-			$insertFields['element_title'] = $element_title;
-			$insertFields['element_language'] = $element_language;
-			$insertFields['element_type'] = $element_type;
-			$insertFields['parent_uid'] = $parent_uid;
-			$insertFields['tstamp'] = $this->now;
-			$insertFields['crdate'] = $this->now;
-			$insertFields['counter'] = 1;
-			// Set only the time fields which are necessary for this category (those which are in the $compareFieldList)
-			foreach (explode(',',$this->timeFields ) as $field) {
-				if (in_array($field,explode(',',$compareFieldList))) {
-					$insertFields[$field] = $this->statData[$field];
-				} else {
-					$insertFields[$field] = -1;
-				}
-
-			}
-			$res = $GLOBALS['TYPO3_DB']->exec_INSERTquery($this->tableName,$insertFields);
-			$this->debug_queries[] = $GLOBALS['TYPO3_DB']->INSERTquery($this->tableName,$insertFields);
-			unset($insertFields);
-		} else {
-			// increase existing counter
-			$updateFields = array();
-			$updateFields['counter'] = $statEntry['counter'] + 1;
-			$updateFields['tstamp'] = $this->now;
-			$where_clause = 'uid = '.$statEntry['uid'];
-			$res = $GLOBALS['TYPO3_DB']->exec_UPDATEquery($this->tableName,$where_clause,$updateFields);
-			$this->debug_queries[] = $GLOBALS['TYPO3_DB']->UPDATEquery($this->tableName,$where_clause,$updateFields);
-			unset($updateFields);
-		}
-	}/*}}}*/
-
-	/**
-	 * Returns the UID of an enty in the data table matching the $compareFieldList (comma-separated list). 
-	 * If there is no matching Entry, it returns -1.
-	 * 
-	 * @param mixed $category 
-	 * @param mixed $compareFieldList 
-	 * @param int $element_uid 
-	 * @param int $element_pid 
-	 * @param string $element_title 
-	 * @param int $element_language 
-	 * @param int $element_type 
-	 * @return void
-	 */
-	function getStatEntry($category,$compareFieldList,$element_uid=0,$element_pid=0,$element_title='',$element_language=0,$element_type=0,$stat_type=STAT_TYPE_PAGES) {/*{{{*/
-		$statEntry = array();
-		$compareData = $this->statData;
-		$compareData['element_uid'] = $element_uid;
-		$compareData['element_pid'] = $element_pid;
-		$compareData['element_title'] = $element_title;
-		$compareData['element_language'] = $element_language;
-		$compareData['element_type'] = $element_type;
-
-		$where_clause = ' type=\''.$stat_type.'\'';
-		$where_clause .= ' AND category=\''.$category.'\'';
-		foreach (explode(',',$compareFieldList) as $field) {
-			// is the field a string field, or an integer?
-			if (in_array($field,array('element_title','type'))) {
-				// string field
-				$where_clause .= ' AND '.$field.'=\''.$compareData[$field].'\'';
-			} else {
-				// integer field
-				$where_clause .= ' AND '.$field.'='.$compareData[$field];
-			}
-
-		}
-		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid,counter',$this->tableName,$where_clause);
-		$this->debug_queries[] = $GLOBALS['TYPO3_DB']->SELECTquery('uid,counter',$this->tableName,$where_clause);
-
-		// any results?
-		if ($GLOBALS['TYPO3_DB']->sql_num_rows($res)) {
-			$statEntry = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
-		}
-
-		return $statEntry;
-	}/*}}}*/
-
-	/**
 	 * sanitizeData 
 	 *
 	 * sanitizeData
@@ -477,6 +488,21 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 */
 	function sanitizeData($data='') {/*{{{*/
 		return htmlspecialchars($data, ENT_QUOTES);
+	}/*}}}*/
+
+	/**
+	 * getTimeData 
+	 * collect the time information
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	function getTimeData() {/*{{{*/
+		$this->statData['year'] = date('Y',$this->now);
+		$this->statData['month'] = date('n',$this->now);
+		$this->statData['day'] = date('j',$this->now);
+		$this->statData['day_of_week'] = date('w',$this->now);
+		$this->statData['hour'] = date('G',$this->now);
 	}/*}}}*/
 
 	/**
@@ -494,11 +520,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 		$this->statData['request_uri'] = $this->sanitizeData(t3lib_div::getIndpEnv('REQUEST_URI'));
 
 		// collect the time information
-		$this->statData['year'] = date('Y',$this->now);
-		$this->statData['month'] = date('n',$this->now);
-		$this->statData['day'] = date('j',$this->now);
-		$this->statData['day_of_week'] = date('w',$this->now);
-		$this->statData['hour'] = date('G',$this->now);
+		$this->getTimeData();
 
 		// check, if the visitor is a robot
 		// and get the short name of the robot or of the browser
@@ -560,6 +582,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 				) {
 				$this->debugMail($this->statData,'[ke_stats] Unknown Operating System');
 			}
+
 			// send mail if user agent is unknown
 			if ($this->debug_mail_if_unknown 
 				&& $this->statData['user_agent_name'] == UNKNOWN_USER_AGENT 

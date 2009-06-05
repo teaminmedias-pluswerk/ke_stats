@@ -4,7 +4,7 @@ enableIpLogging = 0
 # cat=basic//130; type=boolean; label= Enable Live Tracking: Tracking is disabled by default (for performance reasons).
 enableTracking = 0
 
-# cat=basic//130; type=boolean; label= Ignore Backend-Users: Don't count anything if a backend user is logged in.
+# cat=basic//130; type=boolean; label= Ignore Backend-Users: Don't count visits, pageviews ect. of a logged in backend user.
 ignoreBackendUsers = 1
 
 # cat=basic//130; type=boolean; label= Asynchronous data refreshing: Increases performance! But needs a cronjob which updates the database table nightly. Please read the manual.

@@ -61,7 +61,6 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	var $maxLengthURLs = 80;
 	var $maxLengthTableContent = 80;
 	var $showTrackingResultNumbers = array(10 => '10', 50 => '50', 100 => '100', 200 => '200');
-	var $pagelist = '';
 	var $csvContent = array();
 	var $currentRowNumber = 0;
 	var $currentColNumber = 0;
@@ -78,10 +77,13 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 		parent::init();
 
+		// instantiate the shared library
+		$this->kestatslib = t3lib_div::makeInstance('tx_kestats_lib');
+
 		// get the subpages list
 		if ($this->id) {
-			$this->pagelist = strval($this->id);
-			$this->getSubPages($this->id);
+			$this->kestatslib->pagelist = strval($this->id);
+			$this->kestatslib->getSubPages($this->id, $this->pagelist);
 		}
 
 		// load the frontend TSconfig
@@ -92,9 +94,6 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 		// check, if we should render a csv-table
 		$this->csvOutput = (t3lib_div::_GET('format') == 'csv') ? true : false;
-
-		// instantiate the shared library
-		$this->kestatslib = t3lib_div::makeInstance('tx_kestats_lib');
 
 		// get the module TSconfig
 		// $this->modConf = t3lib_BEfunc::getModTSconfig($this->id);
@@ -190,7 +189,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			$this->extConf['asynchronousDataRefreshing'] = $this->extConf['asynchronousDataRefreshing'] ? 1 : 0;
 
 			// Init tab menus
-			$this->tabmenu->initMenu('type','pages');
+			$this->tabmenu->initMenu('type','overview');
 			$now = time();
 			$this->tabmenu->initMenu('month',date('n',$now));
 			$this->tabmenu->initMenu('year',date('Y',$now));
@@ -204,8 +203,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			// this is very slow, so we assume having every type available here 
 			/*
 			$typesArray = array();
-			$where = '('.$this->tablename.'.type=\'extension\' AND '.$this->tablename.'.element_pid IN ('.$this->pagelist.')'. ')';
-			$where .= ' OR ('.$this->tablename.'.type!=\'extension\' AND '.$this->tablename.'.element_uid IN ('.$this->pagelist.')'. ')';
+			$where = '('.$this->tablename.'.type=\'extension\' AND '.$this->tablename.'.element_pid IN ('.$this->kestatslib->pagelist.')'. ')';
+			$where .= ' OR ('.$this->tablename.'.type!=\'extension\' AND '.$this->tablename.'.element_uid IN ('.$this->kestatslib->pagelist.')'. ')';
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('type',$this->tablename,$where,'type');
 
 			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
@@ -227,6 +226,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			// on pages where you click on "extension" and there are no
 			// elements
 			$typesArray = array(
+				'overview' => $LANG->getLL('overview'),
 				STAT_TYPE_PAGES => $LANG->getLL('type_' . STAT_TYPE_PAGES), 
 				STAT_TYPE_EXTENSION => $LANG->getLL('type_' . STAT_TYPE_EXTENSION),
 				'csvdownload' => $LANG->getLL('csvdownload')
@@ -239,11 +239,11 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 			// the query to filter the elements based on the selected page in the pagetree 
 			// extension elements are filtered by their pid 
-			if (strlen($this->pagelist)>0) {
+			if (strlen($this->kestatslib->pagelist)>0) {
 				if ($this->tabmenu->getSelectedValue('type') == STAT_TYPE_EXTENSION) {
-					$this->subpages_query = ' AND '.$this->tablename.'.element_pid IN ('.$this->pagelist.')';
+					$this->subpages_query = ' AND '.$this->tablename.'.element_pid IN ('.$this->kestatslib->pagelist.')';
 				} else {
-					$this->subpages_query = ' AND '.$this->tablename.'.element_uid IN ('.$this->pagelist.')';
+					$this->subpages_query = ' AND '.$this->tablename.'.element_uid IN ('.$this->kestatslib->pagelist.')';
 				}
 			} else {
 				$this->subpages_query = '';
@@ -252,9 +252,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			// render tab menu: types
 			$this->content .= $this->tabmenu->generateTabMenu($typesArray,'type');
 
-
 			// Render menus only if we are not in the csvdownload-section
-			if ($this->tabmenu->getSelectedValue('type') != 'csvdownload' && !$this->csvOutput) {
+			if ($this->tabmenu->getSelectedValue('type') != 'overview' && $this->tabmenu->getSelectedValue('type') != 'csvdownload' && !$this->csvOutput) {
 
 				if ($this->tabmenu->getSelectedValue('type') == STAT_TYPE_PAGES) {
 					// Init tab menus
@@ -534,7 +533,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 			// Debug
 			//$this->content .= 'This page: '.$this->id.'<br />';
-			//$this->content .= 'Pagelist: '.$this->pagelist.'<br />';
+			//$this->content .= 'Pagelist: '.$this->kestatslib->pagelist.'<br />';
 
 			// Render content
 			$this->content .= $this->moduleContent();
@@ -558,6 +557,23 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			$this->content.=$this->doc->spacer(10);
 		}
 	}/*}}}*/
+
+	/**
+	 * renderOverviewPage 
+	 *
+	 * Renders the overview page for the current page.
+	 * Wrapper for the function in kestatslib.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	function renderOverviewPage() {
+		$content = '';
+		$overviewPageData = $this->kestatslib->refreshOverviewPageData($this->id);
+		$content .= $this->renderTable($GLOBALS['LANG']->getLL('pageviews_and_visits_monthly'), 'element_title,pageviews,visits,pages_per_visit', $overviewPageData['pageviews_and_visits'], 'no_line_numbers', '', '');
+		$content .= $overviewPageData['info'];
+		return $content;
+	}
 
 	/**
 	 * Returns a selectorboxes for month/year/language/type for the given data
@@ -647,7 +663,6 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		return $content;
 	}/*}}}*/
 
-
 	/**
 	 * returns the cleartext name of a language uid 
 	 * 
@@ -687,9 +702,13 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 */
 	function moduleContent() {/*{{{*/
 		$content = '';
-	//	$year = 2007;
-	//	$month = 3;
 		switch($this->tabmenu->getSelectedValue('type')) {
+
+			// the overview page
+			case 'overview': 
+				$content .= $this->renderOverviewPage();
+			break;
+
 			// default statistics for pages
 			case STAT_TYPE_PAGES:
 				switch($this->tabmenu->getSelectedValue('list_type')) {
@@ -885,6 +904,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 							break;
 						}
 				}
+				$content .= $this->renderUpdateInformation();
 				//$this->content.=$this->doc->section($GLOBALS['LANG']->getLL('type_pages'),$content,0,1);
 			break;
 			// user tracking statistics
@@ -1021,10 +1041,24 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				$columns = 'element_title,element_uid,counter';
 				$resultArray = $this->getStatResults(STAT_TYPE_EXTENSION,$category,$columns);
 				$content .= $this->renderTable($GLOBALS['LANG']->getLL('type_extension'),$columns,$resultArray,$this->tabmenu->getSelectedValue('extension_type',$this->allowedExtensionTypes));
+				$content .= $this->renderUpdateInformation();
 			break;
 		}
 
-		// Print information about to what time the update has been made (only if asynchronousDataRefreshing is activated)
+		return $content;
+	}/*}}}*/
+
+	/**
+	 * renderUpdateInformation 
+	 *
+	 * Print information about to what time the update has been made (only if
+	 * asynchronousDataRefreshing is activated)
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	function renderUpdateInformation() {/*{{{*/
+		$content = '';
 		if ($this->extConf['asynchronousDataRefreshing']) {
 			$oldestEntry = $this->kestatslib->getOldestQueueEntry();
 			if ($oldestEntry) {
@@ -1036,7 +1070,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 	/**
 	 * Returns an array with statistical data of a certain time period.
-	 * 
+	 *
 	 * @param string $statType: type of the statistic. default ist pages, but may also be for example an extension key.
 	 * @param string $statCategory: category, used to determine further differences with in the statistic type
 	 * @param string $indexField: field, which makes up the index, should be unique
@@ -1044,36 +1078,44 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * @param string $groupBy: group fields (commalist of database field names)
 	 * @param string $encode_title_to_utf8: set to 1 if the title in the result table has to be encoded to utf-8. The function checks for itself, if the backend is set to utf-8 and only then encodes the value.
 	 * @param int $onlySum: display only the sum of each month or the whole list for a certain time period (which is normally a single month)?
+	 * @param array $fromToArray: contains the time period for which the statistical data shoud be generated (year and month from and to). If empty, it will be populated automatically within the function.
 	 * @return array
 	 */
-	function getStatResults($statType='pages',$statCategory,$columns,$onlySum=0,$orderBy='counter DESC',$groupBy='',$encode_title_to_utf8=0) {/*{{{*/
+	function getStatResults($statType='pages',$statCategory,$columns,$onlySum=0,$orderBy='counter DESC',$groupBy='',$encode_title_to_utf8=0, $fromToArray=array()) {/*{{{*/
 		$columns = $this->addTypeAndLanguageToColumns($columns);
-		if ($onlySum) {
-			// the whole time period, for which data exits
-			$fromToArray = $this->getFirstAndLastEntries($statType,$statCategory);
-		} else {
-			// only the month given in the parameters
-			$fromToArray['from_year'] = $this->tabmenu->getSelectedValue('year',$this->allowedYears);
-			$fromToArray['to_year'] = $this->tabmenu->getSelectedValue('year',$this->allowedYears);
-			$fromToArray['from_month'] = $this->tabmenu->getSelectedValue('month',$this->allowedMonths);
-			$fromToArray['to_month'] = $this->tabmenu->getSelectedValue('month',$this->allowedMonths);
+
+		// find out the time period, if it is not given as a parameter
+		if (!count($fromToArray)) {
+			if ($onlySum) {
+				// the whole time period, for which data exits
+				$fromToArray = $this->getFirstAndLastEntries($statType,$statCategory);
+			} else {
+				// only the month given in the parameters
+				$fromToArray['from_year'] = $this->tabmenu->getSelectedValue('year',$this->allowedYears);
+				$fromToArray['to_year'] = $this->tabmenu->getSelectedValue('year',$this->allowedYears);
+				$fromToArray['from_month'] = $this->tabmenu->getSelectedValue('month',$this->allowedMonths);
+				$fromToArray['to_month'] = $this->tabmenu->getSelectedValue('month',$this->allowedMonths);
+			}
 		}
-		$resultArray = array();
-		
-		$yearArray = $this->getDateArray($fromToArray['from_year'],$fromToArray['from_month'],$fromToArray['to_year'],$fromToArray['to_month']);
+
+		$element_language = intval($this->tabmenu->getSelectedValue('element_language'));
+		$element_type = intval($this->tabmenu->getSelectedValue('element_type'));
+
+		return $this->kestatslib->getStatResults($statType, $statCategory, $columns, $onlySum, $orderBy, $groupBy, $encode_title_to_utf8, $fromToArray, $element_language, $element_type);
+
+		// KENNZIFFER, C. B., 05.Jun.2009: 
+		// Now in kestatslib ...
+		/*
+		$yearArray = $this->kestatslib->getDateArray($fromToArray['from_year'],$fromToArray['from_month'],$fromToArray['to_year'],$fromToArray['to_month']);
 		
 		// read the stat data into an array
+		$lineCounter = 0;
 		foreach($yearArray as $year => $monthArray){
 			foreach($monthArray as $month => $daysPerMonth){	
+
 				// if we are dealing with data of a month in the past, we may use the cache
-
-				// debug
-				//echo $month . '.' . $year . ':' . date('m') . '.' . date('Y');;
-
 				if ($year < date('Y') || ($year == date('Y') && $month < date('m'))) {
 					$useCache = true;
-					// debug
-					//echo '  ---> CACHE: ';
 				} else {
 					$useCache = false;
 				}
@@ -1093,7 +1135,6 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				if ($useCache) {
 					// is there a cache entry?
 					// if yes, use this instead of really querying the stats-table
-					//$GLOBALS['TYPO3_DB']->debugOutput = true;
 					$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*',$this->tablenameCache, 
 					'whereclause=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($where_clause, $this->tablenameCache)
 					. ' AND groupby=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($groupBy, $this->tablenameCache) 
@@ -1102,60 +1143,62 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 					if ($GLOBALS['TYPO3_DB']->sql_num_rows($res)) {
 						$cacheRow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
 						$rows = t3lib_div::xml2array($cacheRow['result']);
-						// debug
-						//echo " found cache ";
+
+						// found cache
 						if (!is_array($rows)) {
+
+							// cache is invalid
 							$useCache = false;
-							// debug
-							//echo "cache is invalid";
 						}
 						unset($cacheRow);
+
 					} else {
+
 						$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*',$this->tablename,$where_clause,$groupBy,$orderBy);
+
 						// write the result to the cache
 						if (count($rows)) {
 							$result = t3lib_div::array2xml($rows);
-							//debug
-							//print_r($result);
-							//echo round(strlen($result) / 1024) . ' KB';
+
+							// DEBUG
+							// cache entries may get quite big ...
+							// print_r($result);
+							// echo round(strlen($result) / 1024) . ' KB';
 							$GLOBALS['TYPO3_DB']->exec_INSERTquery($this->tablenameCache,array(
 										'whereclause' => $where_clause,
 										'groupby' => $groupBy,
 										'orderby' => $orderBy,
 										'result' => $result
-										//'result' => base64_encode(htmlentities(serialize($rows),ENT_QUOTES))
-										//'result' => utf8_decode($rows)
 										));
-							// debug
-							//echo " found no cache but created it :-)";
 						}
 					}
 				} 
 
 				if (!$useCache) {
 					$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*',$this->tablename,$where_clause,$groupBy,$orderBy);
-					// debug
-					//echo " not using cache";
 				}
 				
-				// debug
-				//echo '<br />';
-
-				//$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*',$this->tablename,$where_clause,$groupBy,$orderBy);
 				$sum = 0;
-				$rowIndex = $GLOBALS['LANG']->getLL('month_'.$month).' (' . $year . ')';
+
+				// render brackets around the year in CSV mode (otherwise excel doesn't like it)
+				$rowIndex = $GLOBALS['LANG']->getLL('month_'.$month);
+				if ($this->csvOutput) {
+					$rowIndex .= ' (' . $year . ')';
+				} else {
+					$rowIndex .= ' ' . $year;
+				}
+
 				if (!$onlySum) {
 					$lineCounter = 0;
 				}
-				//echo $GLOBALS['TYPO3_DB']->sql_num_rows($res);
-				//if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
 				if (count($rows)) {
-					//while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
 					foreach ($rows as $row) {
+
 						// do we want only the sum of all fields?
 						if ($onlySum) {
 							$sum += $row['counter'];
 						} else {
+
 							// check, if the title matches a title we had already before,
 							// then just increase that row.
 							// This happens for example, when we have entries for one hour, which occured on different days.
@@ -1164,13 +1207,12 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 							// So we can access them here directly.
 							$element_already_counted = 0;
 							for ($i = 0; $i<=$lineCounter; $i++) {
-								if ($resultArray[$i]['element_title']==$row['element_title']) {
+								if ($resultArray[$i]['element_title'] == $row['element_title']) {
 									$resultArray[$i]['counter'] += $row['counter'];
-									//debug($row);
-									//debug($resultArray[$i]);
 									$element_already_counted = 1;
 								}
 							} 
+
 							// Add all columns we want to display to the result
 							// table (this will be at least element_title and column)
 							if (!$element_already_counted) {
@@ -1186,6 +1228,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 						}
 					}
 				}
+
 				if ($onlySum) {
 					$resultArray[$lineCounter]['element_title'] = $rowIndex;
 					$resultArray[$lineCounter]['counter'] = $sum;
@@ -1193,8 +1236,11 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				}
 			}
 		}
-		//debug ($resultArray);
+
+		// DEBUG
+		// debug($resultArray);
 		return $resultArray;
+		*/
 	}/*}}}*/
 
 	/**
@@ -1467,6 +1513,16 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				}
 				$content .= '</tr>';
 				$content .= '</tfoot>';
+			} else {
+
+				// render an empty footer row
+				$content .= '<tfoot>';
+				$content .= '<tr>';
+				for ($column_number=0; $column_number<$numberOfDataColumns; $column_number++) {
+					$content .= '<td>&nbsp;</td>';
+				}
+				$content .= '</tr>';
+				$content .= '</tfoot>';
 			}
 		}
 		$content .= '</table>';
@@ -1633,31 +1689,6 @@ table.ke-stats-table tbody a:visited:after {
 		';
 	}/*}}}*/
 
-	/**
-	 * getSubPages 
-	 *
-	 * returns commalist of all subpages of a given page 
-	 * works recursive
-	 * Does explicitly not check for hidden pages and restricted access!
-	 * 
-	 * @param int $page_uid 
-	 * @access public
-	 * @return void
-	 */
-	function getSubPages($page_uid=0) {/*{{{*/
-		if ($page_uid) {
-			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'pages', 'pid='.intval($page_uid));
-			while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
-				if (strlen($this->pagelist)>0) {
-					$this->pagelist .= ',';
-				}
-				$this->pagelist .= $row['uid'];
-				$this->getSubPages($row['uid']);
-			}
-		} else {
-			$this->pagelist = '';
-		}
-	}/*}}}*/
 
 	/**
 	 * loadFrontendTSconfig 
@@ -1686,59 +1717,6 @@ table.ke-stats-table tbody a:visited:after {
 			}
 		}
 	}/*}}}*/
-  
-	/**
-	 * getDateArray 
-	 *
-	 * returns an array with the years, month and day of the given period
-	 * 
-	 * @param int $from_year 
-	 * @param int $from_month 
-	 * @param int $to_year 
-	 * @param int $to_month 
-	 * @access public
-	 * @return array
-	 * @author Christoph Blömer <info@christoph-bloemer.de>	 
-	 */
-	function getDateArray($from_year,$from_month,$to_year,$to_month){/*{{{*/
-		$fromToArray=array();
-		$fromToArray['from_year'] = $from_year;
-		$fromToArray['to_year'] = $to_year;
-		$fromToArray['from_month'] = $from_month;
-		$fromToArray['to_month'] = $to_month;
-
-		for($j=$fromToArray['from_year'];$j<=$fromToArray['to_year'];$j++){
-			$fromToArray['from_year'] == $j?$monat=$fromToArray['from_month']:$monat=1;
-			$fromToArray['to_year'] == $j?$monat2=$fromToArray['to_month']:$monat2=12;
-			$dayPerMonth[$j]=array();
-			if($fromToArray['from_year']==$fromToArray['to_year'] && $fromToArray['from_month']==$fromToArray['to_month']){
-				$dayPerMonth[$fromToArray['from_year']][$fromToArray['from_month']]=date('t',mktime(0,0,0,$fromToArray['from_month'],1,$fromToArray['from_year']));
-				break;
-			}
-			for($m = $monat; $m <= $monat2; $m++){
-				//Anzahl Tage des Monats
-				$days = date('t',mktime(0,0,0,$m,1,$j));
-				//echo $days."<br />";
-				//Wenn erster Monat
-				if(date('Y',$time1)==$j && date('n',$time1)==$m){
-					$dayPerMonth[$j][$m] = $days-date('j',$time1)+1;
-					//echo "1<br />";
-				}elseif(date('Y',$time2)==$j&&date('n',$time2)==$m){
-					if(date('j',$time2)-1!=0){
-						$dayPerMonth[$j][$m] = date('j',$time2);
-						//$dayPerMonth[$j][$m] = date('j',$time2)-1;
-						//echo "2<br />";
-					}
-				}else{
-					$dayPerMonth[$j][$m] = $days;
-					//echo "3<br />";
-				}
-			}
-		}
-
-		return $dayPerMonth;
-  }/*}}}*/
-
 }
 
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/ke_stats/mod1/index.php'])	{

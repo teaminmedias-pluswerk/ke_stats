@@ -128,8 +128,11 @@
 			<label index="header_tstamp">time</label>
 			<label index="header_element_language">language</label>
 			<label index="header_element_type">type</label>
-
 			<label index="header_percent">Percentage</label>
+			<label index="header_pageviews">Pageviews</label>
+			<label index="header_visits">Visits</label>
+			<label index="header_pages_per_visit">Pages per visit</label>
+
 			<label index="sum">Sum</label>
 			<label index="min">min.</label>
 			<label index="sec">sec.</label>
@@ -146,6 +149,9 @@
 			<label index="tracking_is_disabled">Tracking is disabled. You may enable it in the extension-manager.</label>
 
 			<label index="updated_until">Updated until: </label>
+			<label index="last_update">Last update: </label>
+			<label index="overview">Overview</label>
+			<label index="pageviews_and_visits_monthly">Pageviews and visits monthly</label>
 		</languageKey>
 		<languageKey index="de" type="array">
 			<label index="weekday_0">Sonntag</label>
@@ -274,11 +280,14 @@
 			<label index="header_tstamp">Zeit</label>
 			<label index="header_element_language">Sprache</label>
 			<label index="header_element_type">Typ</label>
-
 			<label index="header_page">Seite</label>
 			<label index="header_percent">Anteil</label>
 			<label index="header_operating_system">Betriebssystem</label>
 			<label index="header_host">Host</label>
+			<label index="header_pageviews">Seitenaufrufe</label>
+			<label index="header_visits">Besuche</label>
+			<label index="header_pages_per_visit">Seiten pro Besuch</label>
+
 			<label index="sum">Summe</label>
 			<label index="min">Min.</label>
 			<label index="sec">Sek.</label>
@@ -293,7 +302,11 @@
 
 			<label index="iplogging_is_disabled">IP-Logging ist deaktiviert. Sie können es im Extension-Manager aktivieren.</label>
 			<label index="tracking_is_disabled">Die Tracking-Funktion ist deaktiviert. Sie können sie im Extension-Manager aktivieren.</label>
+
 			<label index="updated_until">Aktualisiert bis: </label>
+			<label index="last_update">Zuletzt aktualisiert: </label>
+			<label index="overview">Übersicht</label>
+			<label index="pageviews_and_visits_monthly">Seitenaufrufe und Besuche pro Monat</label>
 		</languageKey>
 	</data>
 </T3locallang>

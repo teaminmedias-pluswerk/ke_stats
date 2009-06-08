@@ -67,6 +67,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 	var $csvDateFormat = 'd.m.Y';
 	var $decimalChar = ',';
+	var $overviewPageData = array();
 
 	/**
 	 * Initializes the Module
@@ -152,6 +153,14 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			// Add css: Use the the available space in the backend
 			$this->doc->inDocStyles = 'div.typo3-mediumDoc { width:90%; }';
 
+			// include prototype and flotr for chart rendering
+			$this->doc->JScode .= '<script language="javascript" type="text/javascript" src="../flotr/lib/prototype-1.6.0.2.js"></script>';
+			$this->doc->JScode .= '<!--[if IE]><script language="javascript" type="text/javascript" src="../flotr/lib/excanvas.js"></script><![endif]-->';
+			$this->doc->JScode .= '<!--[if IE]><script language="javascript" type="text/javascript" src="../flotr/lib/base64.js"></script><![endif]-->';
+			$this->doc->JScode .= '<script language="javascript" type="text/javascript" src="../flotr/canvas2image.js"></script>';
+			$this->doc->JScode .= '<script language="javascript" type="text/javascript" src="../flotr/canvastext.js"></script>';
+			$this->doc->JScode .= '<script language="javascript" type="text/javascript" src="../flotr/flotr-0.2.0-alpha.js"></script>';
+
 			// set some additional styles
 			//$this->doc->form='<form action="" method="POST">';
 
@@ -175,19 +184,6 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 			$headerSection = $this->doc->getHeader('pages',$this->pageinfo,$this->pageinfo['_thePath']).'<br />'.$LANG->sL('LLL:EXT:lang/locallang_core.xml:labels.path').': '.t3lib_div::fixed_lgd_pre($this->pageinfo['_thePath'],50);
 
-			$this->content .= $this->doc->startPage($LANG->getLL('title'));
-			$this->content .= $this->doc->header($LANG->getLL('title'));
-			//$this->content .= $this->doc->spacer(5);
-			//$this->content .= $this->doc->section('',$this->doc->funcMenu($headerSection,t3lib_BEfunc::getFuncMenu($this->id,'SET[function]',$this->MOD_SETTINGS['function'],$this->MOD_MENU['function'])));
-			$this->content .= $this->doc->divider(5);
-
-			// get the extension-manager configuration 
-			$this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['ke_stats']);
-			$this->extConf['enableIpLogging'] = $this->extConf['enableIpLogging'] ? 1 : 0;
-			$this->extConf['enableTracking'] = $this->extConf['enableTracking'] ? 1 : 0;
-			$this->extConf['ignoreBackendUsers'] = $this->extConf['ignoreBackendUsers'] ? 1 : 0;
-			$this->extConf['asynchronousDataRefreshing'] = $this->extConf['asynchronousDataRefreshing'] ? 1 : 0;
-
 			// Init tab menus
 			$this->tabmenu->initMenu('type','overview');
 			$now = time();
@@ -195,6 +191,70 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			$this->tabmenu->initMenu('year',date('Y',$now));
 			$this->tabmenu->initMenu('element_language',-1);
 			$this->tabmenu->initMenu('element_type',-1);
+
+			// render chart in overview mode
+			if ($this->tabmenu->getSelectedValue('type') == 'overview') {
+
+				// get the data
+				$this->overviewPageData = $this->kestatslib->refreshOverviewPageData($this->id);
+
+				// flotr example
+				$this->doc->JScode .= '
+				   <script language="javascript" type="text/javascript">
+						document.observe(\'dom:loaded\', function(){
+							/* Example:
+							var d1 = [];
+							for (var i = 0; i < 14; i += 0.5) d1.push([i, Math.sin(i)]);
+							var d2 = [[0, 3], [4, 8], [8, 5], [9, 13]];
+							var f = Flotr.draw($(\'container\'), [ d1, d2 ]);
+							*/' . "\n";
+
+				// Pageviews
+				$this->doc->JScode .= 'var pageviews = [';
+				$flotrDataArray = array();
+				for ($i = 0; $i<12 ; $i++) {
+					$flotrDataArray[$i] = '[' . $i . ', ' . $this->overviewPageData['pageviews_and_visits'][$i]['pageviews'] . ']';
+				}
+				$this->doc->JScode .= implode(',', $flotrDataArray);
+				$this->doc->JScode .= ' ];' . "\n";
+
+				// Visits
+				$this->doc->JScode .= 'var visits = [';
+				$flotrDataArray = array();
+				for ($i = 0; $i<12 ; $i++) {
+					$flotrDataArray[$i] = '[' . $i . ', ' . $this->overviewPageData['pageviews_and_visits'][$i]['visits'] . ']';
+				}
+				$this->doc->JScode .= implode(',', $flotrDataArray);
+				$this->doc->JScode .= ' ];' . "\n";
+
+				// Render
+				$this->doc->JScode .= '
+							var f = Flotr.draw($(\'container\'), [
+								{ data:pageviews, label:\'Pageviews\' },
+								{ data:visits, label:\'Visits\' }
+							],
+							{ 
+							legend: { backgroundOpacity:0 },
+							lines: { fill:true } 
+							}
+							);
+
+						});
+				</script>';
+			}
+
+			$this->content .= $this->doc->startPage($LANG->getLL('title'));
+			$this->content .= $this->doc->header($LANG->getLL('title'));
+			//$this->content .= $this->doc->spacer(5);
+			//$this->content .= $this->doc->section('',$this->doc->funcMenu($headerSection,t3lib_BEfunc::getFuncMenu($this->id,'SET[function]',$this->MOD_SETTINGS['function'],$this->MOD_MENU['function'])));
+			$this->content .= $this->doc->divider(5);
+	
+			// get the extension-manager configuration 
+			$this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['ke_stats']);
+			$this->extConf['enableIpLogging'] = $this->extConf['enableIpLogging'] ? 1 : 0;
+			$this->extConf['enableTracking'] = $this->extConf['enableTracking'] ? 1 : 0;
+			$this->extConf['ignoreBackendUsers'] = $this->extConf['ignoreBackendUsers'] ? 1 : 0;
+			$this->extConf['asynchronousDataRefreshing'] = $this->extConf['asynchronousDataRefreshing'] ? 1 : 0;
 
 			// find out what types we have statistics for
 			// extension elements are filtered by their pid
@@ -569,9 +629,11 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 */
 	function renderOverviewPage() {
 		$content = '';
-		$overviewPageData = $this->kestatslib->refreshOverviewPageData($this->id);
-		$content .= $this->renderTable($GLOBALS['LANG']->getLL('pageviews_and_visits_monthly'), 'element_title,pageviews,visits,pages_per_visit', $overviewPageData['pageviews_and_visits'], 'no_line_numbers', '', '');
-		$content .= $overviewPageData['info'];
+
+		// div for chart rendering (using flotr)
+		$content .=  "<div id=\"container\" style=\"width:600px;height:300px;\"></div>";
+		$content .= $this->renderTable($GLOBALS['LANG']->getLL('pageviews_and_visits_monthly'), 'element_title,pageviews,visits,pages_per_visit', $this->overviewPageData['pageviews_and_visits'], 'no_line_numbers', '', '');
+		$content .= $this->overviewPageData['info'];
 		return $content;
 	}
 

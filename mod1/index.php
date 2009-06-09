@@ -195,19 +195,34 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			// render chart in overview mode
 			if ($this->tabmenu->getSelectedValue('type') == 'overview') {
 
-				// get the data
+				// get the for the overview page data
 				$this->overviewPageData = $this->kestatslib->refreshOverviewPageData($this->id);
 
-				// flotr example
+				// render chart using flotr library
+				// http://solutoire.com/flotr/
 				$this->doc->JScode .= '
 				   <script language="javascript" type="text/javascript">
-						document.observe(\'dom:loaded\', function(){
-							/* Example:
-							var d1 = [];
-							for (var i = 0; i < 14; i += 0.5) d1.push([i, Math.sin(i)]);
-							var d2 = [[0, 3], [4, 8], [8, 5], [9, 13]];
-							var f = Flotr.draw($(\'container\'), [ d1, d2 ]);
-							*/' . "\n";
+
+						function monthTickFormatter(inputNumber) {
+							output = inputNumber;
+							switch (inputNumber) {
+								case "0": output = \'' . $this->overviewPageData['pageviews_and_visits'][0]['element_title'] . '\'; break; 
+								case "1": output = \'' . $this->overviewPageData['pageviews_and_visits'][1]['element_title'] . '\'; break; 
+								case "2": output = \'' . $this->overviewPageData['pageviews_and_visits'][2]['element_title'] . '\'; break; 
+								case "3": output = \'' . $this->overviewPageData['pageviews_and_visits'][3]['element_title'] . '\'; break; 
+								case "4": output = \'' . $this->overviewPageData['pageviews_and_visits'][4]['element_title'] . '\'; break; 
+								case "5": output = \'' . $this->overviewPageData['pageviews_and_visits'][5]['element_title'] . '\'; break; 
+								case "6": output = \'' . $this->overviewPageData['pageviews_and_visits'][6]['element_title'] . '\'; break; 
+								case "7": output = \'' . $this->overviewPageData['pageviews_and_visits'][7]['element_title'] . '\'; break; 
+								case "8": output = \'' . $this->overviewPageData['pageviews_and_visits'][8]['element_title'] . '\'; break; 
+								case "9": output = \'' . $this->overviewPageData['pageviews_and_visits'][9]['element_title'] . '\'; break; 
+								case "10": output = \'' . $this->overviewPageData['pageviews_and_visits'][10]['element_title'] . '\'; break; 
+								case "11": output = \'' . $this->overviewPageData['pageviews_and_visits'][11]['element_title'] . '\'; break; 
+							}
+							return output;
+						}
+
+						document.observe(\'dom:loaded\', function(){' . "\n";
 
 				// Pageviews
 				$this->doc->JScode .= 'var pageviews = [';
@@ -230,12 +245,13 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				// Render
 				$this->doc->JScode .= '
 							var f = Flotr.draw($(\'container\'), [
-								{ data:pageviews, label:\'Pageviews\' },
-								{ data:visits, label:\'Visits\' }
+								{ data:pageviews, label:\'Pageviews\', color: \'#0000ff\', points:{show: true} },
+								{ data:visits, label:\'Visits\', color: \'#009933\', points:{show: true} }
 							],
 							{ 
-							legend: { backgroundOpacity:0 },
-							lines: { fill:true } 
+								legend: { backgroundOpacity:0 },
+								lines: { show:true, fill:true },
+								xaxis: { tickFormatter: monthTickFormatter, tickDecimals: 0 },
 							}
 							);
 
@@ -621,21 +637,36 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	/**
 	 * renderOverviewPage 
 	 *
-	 * Renders the overview page for the current page.
+	 * Renders the overview for the current page.
 	 * Wrapper for the function in kestatslib.
 	 * 
 	 * @access public
 	 * @return void
 	 */
-	function renderOverviewPage() {
+	function renderOverviewPage() {/*{{{*/
 		$content = '';
 
 		// div for chart rendering (using flotr)
 		$content .=  "<div id=\"container\" style=\"width:600px;height:300px;\"></div>";
-		$content .= $this->renderTable($GLOBALS['LANG']->getLL('pageviews_and_visits_monthly'), 'element_title,pageviews,visits,pages_per_visit', $this->overviewPageData['pageviews_and_visits'], 'no_line_numbers', '', '');
 		$content .= $this->overviewPageData['info'];
+
+		// monthly progress, combined table
+		$content .= $this->renderTable($GLOBALS['LANG']->getLL('overview_pageviews_and_visits_monthly'), 'element_title,pageviews,visits,pages_per_visit', $this->overviewPageData['pageviews_and_visits'], 'no_line_numbers', '', '');
+
+		// pageviews of current month, top 10
+		$content .= $this->renderTable($GLOBALS['LANG']->getLL('overview_pageviews_current_month'), 'element_title,element_uid,counter', $this->overviewPageData['pageviews_current_month'], '', '', '', 10);
+
+		// referers, external websites, top 10
+		$content .= $this->renderTable($GLOBALS['LANG']->getLL('overview_referers_external_websites'), 'element_title,counter', $this->overviewPageData['referers_external_websites'], 'url', '', '', 10);
+
+		// search words, top 10
+		$content .= $this->renderTable($GLOBALS['LANG']->getLL('overview_search_words'), 'element_title,counter', $this->overviewPageData['search_words'], '', '', '', 10);
+
+		//debug($this->overviewPageData);
+		//debug($this->overviewPageData['extensionlist']);
+
 		return $content;
-	}
+	}/*}}}*/
 
 	/**
 	 * Returns a selectorboxes for month/year/language/type for the given data
@@ -647,8 +678,6 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	function renderSelectorMenu($statType,$statCategory) {/*{{{*/
 		$content = '';
 		$fromToArray = $this->getFirstAndLastEntries($statType,$statCategory);
-		//debug($statType.' category: '.$statCategory);
-		//debug($fromToArray);
 
 		// generate the year and the month-array
 		// generate a list of allowed values for the years an the months
@@ -1298,9 +1327,6 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				}
 			}
 		}
-
-		// DEBUG
-		// debug($resultArray);
 		return $resultArray;
 		*/
 	}/*}}}*/
@@ -1373,12 +1399,13 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * @param string $caption: Table-caption
 	 * @param string $columns: comma-separated list of column-names used in the table (corrsponding to the array-keys in each row)
 	 * @param array $dataRows: data array
+	 * @param string $special: special rendering options
 	 * @param string $columnWithSum: name of the column for which a sum shall be calculated
 	 * @param string $columnWithPercent: name of the column for which a sum shall be calculated
-	 * @param string $special: special rendering options
+	 * @param string $maxrows: Max. rows to render. 0 --> render all rows.
 	 * @return string
 	 */
-	function renderTable($caption='Table',$columns='element_title,element_uid,counter',$dataRows=array(),$special='',$columnWithSum='counter',$columnWithPercent='counter') {/*{{{*/
+	function renderTable($caption='Table',$columns='element_title,element_uid,counter',$dataRows=array(),$special='',$columnWithSum='counter',$columnWithPercent='counter',$maxrows=0) {/*{{{*/
 
 		$columns = $this->addTypeAndLanguageToColumns($columns);
 		$content = '';
@@ -1419,6 +1446,11 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			}
 		}
 
+		// hack: we do have at least two colums!
+		if ($numberOfDataColumns < 2) {
+			$numberOfDataColumns = 2;
+		}
+
 		// render table
 		$content .= '<table class="ke-stats-table" summary="'.$caption.'">';
 		$content .= '<caption>'.$caption.'</caption>';
@@ -1448,102 +1480,115 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		}
 		$content .= '</tr>';
 		$content .= '</thead>';
-		$oddRow=0;
+		$oddRow = 0;
+		$rowCount = 0;
 
 		// print the data rows
 		if (count($dataRows) > 0) {
 			$content .= '<tbody>';
 			foreach ($dataRows as $key => $dataRow) {
-				$content .= '<tr';
-				if ($oddRow) {
-					$content .= ' class="odd"';
-				}
-				$content .= '>';
-				$oddRow = 1-$oddRow;
-				$column_number = 0;
 
-				// start a new csv row
-				$this->addCsvRow();
-
-				// print the line number (which is the key in the data array)
-				if (!strstr($special,'no_line_numbers')) {
-					$content .= '<td>'.$key.'</td>';
-					$this->addCsvCol($key);
+				// skip empty rows with empty title and emtpy uid
+				$skipRow = false;
+				if (empty($dataRow['element_title']) && empty($dataRow['element_uid'])) {
+					$skipRow = true;
+				} else {
+					$rowCount++;
 				}
-				foreach ($dataRow as $data) {
-					// print the label of this row
-					if ($column_number == 0) {
-						if (strstr($special,'day_of_week')) {
-							$formatted_data = $GLOBALS['LANG']->getLL('weekday_'.$data);
-						} else if (strstr($special,'hosts')) {
-							$formatted_data = gethostbyaddr($data);
-						} else if (strstr($special,'url')) {
-							$formatted_data = $data;
-							if (substr($formatted_data,0,strlen('http://')) == 'http://') {
-								$formatted_data = substr($formatted_data,strlen('http://'));
-							}
-							if (strlen($formatted_data) > $this->maxLengthURLs) {
-								$formatted_data = substr($formatted_data,0,$this->maxLengthURLs).'...';
-							} 
-							// sanitize the output
-							// since 5.5.2008 data is already sanitized in the frontend
-							// plugin, but maybe there are older values in the
-							// databases that need to be sanitized
-							$formatted_data = '<a target="_blank" href="'.htmlspecialchars($data, ENT_QUOTES).'">'.htmlspecialchars($formatted_data, ENT_QUOTES).'</a>';
-						} else if (strstr($special,'naw_securedl')) {
-							// Data from extension "naw_securedl"
-							$formatted_data = '<a title="'.htmlspecialchars($data, ENT_QUOTES).'" alt="'.htmlspecialchars($data, ENT_QUOTES).'">'.basename(htmlspecialchars($data, ENT_QUOTES)).'</a>';
-						} else if (strstr($special,'none')) {
-							$formatted_data = $data;
-							$formatted_data = htmlspecialchars($formatted_data, ENT_QUOTES);
-						} else if (strstr($special,'hour_of_day')) {
-							$formatted_data = $data.' - '.sprintf('%02d',intval($data+1));
-						} else {
-							$formatted_data = $data;
-							if (strlen($formatted_data) > $this->maxLengthTableContent) {
-								$formatted_data = substr($formatted_data,0,$this->maxLengthTableContent).'...';
-							} 
-						}
-						$this->addCsvCol(strip_tags($formatted_data));
-					} else {
-						// print the data
-						// if this the row with the language, print the cleartext language name
-						if ($column_number == $language_column) {
-							$formatted_data = $this->getLanguageName($data);
-						} else {
-							// do some formatting
-							switch ($special) {
-								default:
-									$formatted_data = $data;
-									// number format for integer fields
-									if (strval(intval($formatted_data)) == $formatted_data) {
-										$formatted_data = number_format(intval($formatted_data),0,'.',' ');
-									}
-								break;
-							}
-						}
-						// remove spaces from numbers
-						$this->addCsvCol(strip_tags(str_replace(' ', '', $formatted_data)));
+
+				// render row if we not reached the limit $maxrows
+				if (!$maxrows || $rowCount <= $maxrows && !$skipRow) {
+					$content .= '<tr';
+					if ($oddRow) {
+						$content .= ' class="odd"';
 					}
+					$content .= '>';
+					$oddRow = 1-$oddRow;
+					$column_number = 0;
 
-					// add the data to the output
-					$content .= '<td>'.$formatted_data.'</td>';
+					// start a new csv row
+					$this->addCsvRow();
 
-					// render the percent column
-					if ($columnsArray[$column_number] == $columnWithPercent) {
-						if (!empty($sumRow[$column_number])) {
-							//$percent = round(100 * intval($data) / $sumRow[$column_number],2);
-							$percent = 100 * intval($data) / $sumRow[$column_number];
-							$percent = number_format($percent, 2, $this->decimalChar, ' ');
-						} else {
-							$percent = '-';
-						}
-						$content.='<td>'.$percent.' %</td>';
-						$this->addCsvCol($percent . ' %');
+					// print the line number (which is the key in the data array)
+					if (!strstr($special,'no_line_numbers')) {
+						$content .= '<td>'.$key.'</td>';
+						$this->addCsvCol($key);
 					}
-					$column_number++;
+					foreach ($dataRow as $data) {
+						// print the label of this row
+						if ($column_number == 0) {
+							if (strstr($special,'day_of_week')) {
+								$formatted_data = $GLOBALS['LANG']->getLL('weekday_'.$data);
+							} else if (strstr($special,'hosts')) {
+								$formatted_data = gethostbyaddr($data);
+							} else if (strstr($special,'url')) {
+								$formatted_data = $data;
+								if (substr($formatted_data,0,strlen('http://')) == 'http://') {
+									$formatted_data = substr($formatted_data,strlen('http://'));
+								}
+								if (strlen($formatted_data) > $this->maxLengthURLs) {
+									$formatted_data = substr($formatted_data,0,$this->maxLengthURLs).'...';
+								} 
+								// sanitize the output
+								// since 5.5.2008 data is already sanitized in the frontend
+								// plugin, but maybe there are older values in the
+								// databases that need to be sanitized
+								$formatted_data = '<a target="_blank" href="'.htmlspecialchars($data, ENT_QUOTES).'">'.htmlspecialchars($formatted_data, ENT_QUOTES).'</a>';
+							} else if (strstr($special,'naw_securedl')) {
+								// Data from extension "naw_securedl"
+								$formatted_data = '<a title="'.htmlspecialchars($data, ENT_QUOTES).'" alt="'.htmlspecialchars($data, ENT_QUOTES).'">'.basename(htmlspecialchars($data, ENT_QUOTES)).'</a>';
+							} else if (strstr($special,'none')) {
+								$formatted_data = $data;
+								$formatted_data = htmlspecialchars($formatted_data, ENT_QUOTES);
+							} else if (strstr($special,'hour_of_day')) {
+								$formatted_data = $data.' - '.sprintf('%02d',intval($data+1));
+							} else {
+								$formatted_data = $data;
+								if (strlen($formatted_data) > $this->maxLengthTableContent) {
+									$formatted_data = substr($formatted_data,0,$this->maxLengthTableContent).'...';
+								} 
+							}
+							$this->addCsvCol(strip_tags($formatted_data));
+						} else {
+							// print the data
+							// if this the row with the language, print the cleartext language name
+							if ($column_number == $language_column) {
+								$formatted_data = $this->getLanguageName($data);
+							} else {
+								// do some formatting
+								switch ($special) {
+									default:
+										$formatted_data = $data;
+										// number format for integer fields
+										if (strval(intval($formatted_data)) == $formatted_data) {
+											$formatted_data = number_format(intval($formatted_data),0,'.',' ');
+										}
+									break;
+								}
+							}
+							// remove spaces from numbers
+							$this->addCsvCol(strip_tags(str_replace(' ', '', $formatted_data)));
+						}
+
+						// add the data to the output
+						$content .= '<td>'.$formatted_data.'</td>';
+
+						// render the percent column
+						if ($columnsArray[$column_number] == $columnWithPercent) {
+							if (!empty($sumRow[$column_number])) {
+								//$percent = round(100 * intval($data) / $sumRow[$column_number],2);
+								$percent = 100 * intval($data) / $sumRow[$column_number];
+								$percent = number_format($percent, 2, $this->decimalChar, ' ');
+							} else {
+								$percent = '-';
+							}
+							$content.='<td>'.$percent.' %</td>';
+							$this->addCsvCol($percent . ' %');
+						}
+						$column_number++;
+					}
+					$content .= '</tr>';
 				}
-				$content .= '</tr>';
 			}
 			$content .= '</tbody>';
 
@@ -1580,7 +1625,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				// render an empty footer row
 				$content .= '<tfoot>';
 				$content .= '<tr>';
-				for ($column_number=0; $column_number<$numberOfDataColumns; $column_number++) {
+				$footerColumns = ($special == 'no_line_numbers') ? $numberOfDataColumns : $numberOfDataColumns + 1;
+				for ($column_number=0; $column_number<$footerColumns; $column_number++) {
 					$content .= '<td>&nbsp;</td>';
 				}
 				$content .= '</tr>';

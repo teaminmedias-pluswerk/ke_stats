@@ -151,7 +151,10 @@
 			<label index="updated_until">Updated until: </label>
 			<label index="last_update">Last update: </label>
 			<label index="overview">Overview</label>
-			<label index="pageviews_and_visits_monthly">Pageviews and visits monthly</label>
+			<label index="overview_pageviews_and_visits_monthly">Pageviews and visits of the last 12 months</label>
+			<label index="overview_pageviews_current_month">Top 10: Pageviews in current month</label>
+			<label index="overview_referers_external_websites">Top 10: Referers from external websites</label>
+			<label index="overview_search_words">Top 10: Search words from external search engines</label>
 		</languageKey>
 		<languageKey index="de" type="array">
 			<label index="weekday_0">Sonntag</label>
@@ -306,7 +309,10 @@
 			<label index="updated_until">Aktualisiert bis: </label>
 			<label index="last_update">Zuletzt aktualisiert: </label>
 			<label index="overview">Übersicht</label>
-			<label index="pageviews_and_visits_monthly">Seitenaufrufe und Besuche pro Monat</label>
+			<label index="overview_pageviews_and_visits_monthly">Seitenaufrufe und Besuche der letzten 12 Monate</label>
+			<label index="overview_pageviews_current_month">Top 10: Seitenaufrufe im aktuellen Monat</label>
+			<label index="overview_referers_external_websites">Top 10: Verweise von externen Seiten</label>
+			<label index="overview_search_words">Top 10: Suchbegriffe über externe Suchmaschinen</label>
 		</languageKey>
 	</data>
 </T3locallang>

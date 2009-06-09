@@ -76,6 +76,17 @@ do {
 		$counter ++;
 	} 
 
+	//function updateStatisticsTable(
+	//$category,
+	//$compareFieldList,
+	//$element_title='',
+	//$element_uid=0,
+	//$element_pid=0,
+	//$element_language=0,
+	//$element_type=0,
+	//$stat_type=STAT_TYPE_PAGES,
+	//$parent_uid=0) 
+
 	$runningTime = t3lib_div::milliseconds() - $startTime;
 
 } while ($oldestEntry && ($runningTime < MAX_EXECUTION_TIME));

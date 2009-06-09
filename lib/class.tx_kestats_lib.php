@@ -31,9 +31,6 @@
  */
 class tx_kestats_lib {
 	var $statData = array();
-	var $tablename = 'tx_kestats_statdata';
-	var $tablenameCache = 'tx_kestats_cache';
-	var $tablenameQueue = 'tx_kestats_queue';
 	var $timeFields = 'year,month';
 	var $pagelist = '';
 
@@ -107,7 +104,14 @@ class tx_kestats_lib {
 		}
 	}/*}}}*/
 
-	function refreshOverviewPageData($pageUid=0) {
+	/**
+	 * refreshOverviewPageData 
+	 * 
+	 * @param int $pageUid 
+	 * @access public
+	 * @return void
+	 */
+	function refreshOverviewPageData($pageUid=0) {/*{{{*/
 		$overviewPageData = array();
 
 		// all languages and types will be shown in the overview page
@@ -150,13 +154,55 @@ class tx_kestats_lib {
 			}
 
 			$overviewPageData['pageviews_and_visits'] = $resultArray;
+			unset($pageviews);
+			unset($visits);
+			unset($resultArray);
+
+			// in the overview page we display the current month for the detailed listing
+			$fromToArray['from_year'] = date('Y');
+			$fromToArray['to_year'] = date('Y');
+			$fromToArray['from_month'] = date('n');
+			$fromToArray['to_month'] = date('n');
+
+			// pageviews of the current month
+			$columns = 'element_title,element_uid,counter';
+			$overviewPageData['pageviews_current_month'] = $this->getStatResults(STAT_TYPE_PAGES, CATEGORY_PAGES, $columns, 0, 'counter DESC', '', 0, $fromToArray, $element_language, $element_type);
+
+			// referers, external websites
+			$columns = 'element_title,counter';
+			$overviewPageData['referers_external_websites'] = $this->getStatResults(STAT_TYPE_PAGES, CATEGORY_REFERERS_EXTERNAL_WEBSITES, $columns, 0, 'counter DESC', '', 0, $fromToArray, $element_language, $element_type);
+
+			// search words
+			$columns = 'element_title,counter';
+			$overviewPageData['search_words'] = $this->getStatResults(STAT_TYPE_PAGES, CATEGORY_SEARCH_STRINGS, $columns, 0, 'counter DESC', '', 0, $fromToArray, $element_language, $element_type);
+
+			// extensions
+			// get extension types
+			$extensionTypes= array();
+			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('category','tx_kestats_statdata','type=\''.STAT_TYPE_EXTENSION.'\' AND year='. date('Y') . ' AND month=' . date('m'), 'category');
+			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
+				while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
+					$extensionTypes[] = $row['category'];
+				}
+			} 
+
+			// save extension list
+			$overviewPageData['extensionlist'] = implode(',', $extensionTypes);
+
+			// get extension data
+			$columns = 'element_title,counter';
+			foreach ($extensionTypes as $extensionType) {
+				//$overviewPageData['extension_' . $extensionType] = $this->getStatResults(STAT_TYPE_EXTENSION, $extensionType, $columns, 0, 'counter DESC', '', 0, $fromToArray, $element_language, $element_type);
+			}
 
 			// some time information ...
 			$runningTime = round((t3lib_div::milliseconds() - $startTime) / 1000, 1);
-			$overviewPageData['info'] = '<p class="update_information">' . $GLOBALS['LANG']->getLL('last_update') . date(UPDATED_UNTIL_DATEFORMAT) . ' in ' . $runningTime . ' s.<p>';
+			$overviewPageData['info'] = '<p class="update_information">' . $GLOBALS['LANG']->getLL('last_update') . date(UPDATED_UNTIL_DATEFORMAT);
+			//$overviewPageData['info'] .= ' in ' . $runningTime . ' s.<p>';
+			$overviewPageData['tstamp'] = time();
 		}
 		return $overviewPageData;
-	}
+	}/*}}}*/
 
 	/**
 	 * Returns an array with statistical data of a certain time period.
@@ -204,9 +250,9 @@ class tx_kestats_lib {
 				// extension elements are filtered by their pid 
 				if (strlen($this->pagelist)>0) {
 					if ($statType == STAT_TYPE_EXTENSION) {
-						$subpages_query = ' AND '.$this->tablename.'.element_pid IN ('.$this->pagelist.')';
+						$subpages_query = ' AND tx_kestats_statdata.element_pid IN ('.$this->pagelist.')';
 					} else {
-						$subpages_query = ' AND '.$this->tablename.'.element_uid IN ('.$this->pagelist.')';
+						$subpages_query = ' AND tx_kestats_statdata.element_uid IN ('.$this->pagelist.')';
 					}
 				} else {
 					$subpages_query = '';
@@ -216,10 +262,10 @@ class tx_kestats_lib {
 				if ($useCache) {
 					// is there a cache entry?
 					// if yes, use this instead of really querying the stats-table
-					$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*',$this->tablenameCache, 
-					'whereclause=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($where_clause, $this->tablenameCache)
-					. ' AND groupby=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($groupBy, $this->tablenameCache) 
-					. ' AND orderby=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($orderBy, $this->tablenameCache) );
+					$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*','tx_kestats_cache', 
+					'whereclause=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($where_clause, 'tx_kestats_cache')
+					. ' AND groupby=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($groupBy, 'tx_kestats_cache') 
+					. ' AND orderby=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($orderBy, 'tx_kestats_cache') );
 
 					if ($GLOBALS['TYPO3_DB']->sql_num_rows($res)) {
 						$cacheRow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
@@ -235,7 +281,7 @@ class tx_kestats_lib {
 
 					} else {
 
-						$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*',$this->tablename,$where_clause,$groupBy,$orderBy);
+						$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*','tx_kestats_statdata',$where_clause,$groupBy,$orderBy);
 
 						// write the result to the cache
 						if (count($rows)) {
@@ -245,7 +291,7 @@ class tx_kestats_lib {
 							// cache entries may get quite big ...
 							// print_r($result);
 							// echo round(strlen($result) / 1024) . ' KB';
-							$GLOBALS['TYPO3_DB']->exec_INSERTquery($this->tablenameCache,array(
+							$GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_kestats_cache',array(
 										'whereclause' => $where_clause,
 										'groupby' => $groupBy,
 										'orderby' => $orderBy,
@@ -256,7 +302,7 @@ class tx_kestats_lib {
 				} 
 
 				if (!$useCache) {
-					$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*',$this->tablename,$where_clause,$groupBy,$orderBy);
+					$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*','tx_kestats_statdata',$where_clause,$groupBy,$orderBy);
 				}
 				
 				$sum = 0;
@@ -436,7 +482,7 @@ class tx_kestats_lib {
 				}
 
 			}
-			$res = $GLOBALS['TYPO3_DB']->exec_INSERTquery($this->tableName,$insertFields);
+			$res = $GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_kestats_statdata', $insertFields);
 			unset($insertFields);
 		} else {
 			// increase existing counter
@@ -444,7 +490,7 @@ class tx_kestats_lib {
 			$updateFields['counter'] = $statEntry['counter'] + 1;
 			$updateFields['tstamp'] = $this->now;
 			$where_clause = 'uid = '.$statEntry['uid'];
-			$res = $GLOBALS['TYPO3_DB']->exec_UPDATEquery($this->tableName,$where_clause,$updateFields);
+			$res = $GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_kestats_statdata',$where_clause,$updateFields);
 			unset($updateFields);
 		}
 	}/*}}}*/
@@ -484,7 +530,7 @@ class tx_kestats_lib {
 			}
 
 		}
-		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid,counter',$this->tableName,$where_clause);
+		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid,counter','tx_kestats_statdata',$where_clause);
 
 		// any results?
 		if ($GLOBALS['TYPO3_DB']->sql_num_rows($res)) {
@@ -509,6 +555,29 @@ class tx_kestats_lib {
 			$result = false;
 		}
 		return $result;
+	}/*}}}*/
+
+	/**
+	 * debugMail 
+	 *
+	 * Sends a html mail with debug information
+	 * 
+	 * @param string $email 
+	 * @param string $content 
+	 * @param string $subject 
+	 * @access public
+	 * @return void
+	 */
+	function debugMail($email='',$content='',$subject = 'TYPO3 tx_kestats_lib DEBUG') {/*{{{*/
+		if (is_array($content)) {
+			$content = t3lib_div::view_array($content);
+		}
+
+		$header = "MIME-Version: 1.0\n";
+		$header .= "Content-type: text/html; charset=utf-8\n";
+		$header .= "From: ke_stats DEBUG\n"; 
+
+		mail($email,$subject,$content,$header);
 	}/*}}}*/
 
 }

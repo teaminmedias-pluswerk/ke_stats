@@ -245,8 +245,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				// Render
 				$this->doc->JScode .= '
 							var f = Flotr.draw($(\'container\'), [
-								{ data:pageviews, label:\'Pageviews\', color: \'#0000ff\', points:{show: true} },
-								{ data:visits, label:\'Visits\', color: \'#009933\', points:{show: true} }
+								{ data:pageviews, label:\'' . $LANG->getLL('category_pages_all') . '\', color: \'#0000ff\', points:{show: true} },
+								{ data:visits, label:\'' . $LANG->getLL('category_visits') . '\', color: \'#009933\', points:{show: true} }
 							],
 							{ 
 								legend: { backgroundOpacity:0 },
@@ -653,6 +653,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		// monthly progress, combined table
 		$content .= $this->renderTable($GLOBALS['LANG']->getLL('overview_pageviews_and_visits_monthly'), 'element_title,pageviews,visits,pages_per_visit', $this->overviewPageData['pageviews_and_visits'], 'no_line_numbers', '', '');
 
+		// for future versions:
+		/*
 		// pageviews of current month, top 10
 		$content .= $this->renderTable($GLOBALS['LANG']->getLL('overview_pageviews_current_month'), 'element_title,element_uid,counter', $this->overviewPageData['pageviews_current_month'], '', '', '', 10);
 
@@ -661,10 +663,11 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 		// search words, top 10
 		$content .= $this->renderTable($GLOBALS['LANG']->getLL('overview_search_words'), 'element_title,counter', $this->overviewPageData['search_words'], '', '', '', 10);
+		*/
 
 		//debug($this->overviewPageData);
 		//debug($this->overviewPageData['extensionlist']);
-
+		
 		return $content;
 	}/*}}}*/
 

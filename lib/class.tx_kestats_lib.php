@@ -106,6 +106,11 @@ class tx_kestats_lib {
 
 	/**
 	 * refreshOverviewPageData 
+	 *
+	 * In future versions there will be an overview page with more data. This
+	 * page will then stay in a cache and will be updated by a cron-cli-script.
+	 * Right now, there are only visitors and pageviews in order to keep the
+	 * rendering time fast.
 	 * 
 	 * @param int $pageUid 
 	 * @access public
@@ -158,6 +163,9 @@ class tx_kestats_lib {
 			unset($visits);
 			unset($resultArray);
 
+			// For future versions:
+			/*
+
 			// in the overview page we display the current month for the detailed listing
 			$fromToArray['from_year'] = date('Y');
 			$fromToArray['to_year'] = date('Y');
@@ -194,6 +202,8 @@ class tx_kestats_lib {
 			foreach ($extensionTypes as $extensionType) {
 				//$overviewPageData['extension_' . $extensionType] = $this->getStatResults(STAT_TYPE_EXTENSION, $extensionType, $columns, 0, 'counter DESC', '', 0, $fromToArray, $element_language, $element_type);
 			}
+
+			*/
 
 			// some time information ...
 			$runningTime = round((t3lib_div::milliseconds() - $startTime) / 1000, 1);

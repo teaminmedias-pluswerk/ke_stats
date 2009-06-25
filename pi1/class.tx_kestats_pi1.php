@@ -57,7 +57,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 	var $debug_email = '';
 	var $debug_mail_if_unknown = 0;
 	var $debug_mail_queries = 0;
-	var $debug_timetracking = 1;
+	var $debug_timetracking = 0;
 	var $debug_queries = array();
 	var $timetracking = array();
 	var $timetracking_start = 0;
@@ -120,9 +120,18 @@ class tx_kestats_pi1 extends tslib_pibase {
 		$this->extConf['enableIpLogging'] = $this->extConf['enableIpLogging'] ? 1 : 0;
 		$this->extConf['enableTracking'] = $this->extConf['enableTracking'] ? 1 : 0;
 		$this->extConf['ignoreBackendUsers'] = $this->extConf['ignoreBackendUsers'] ? 1 : 0;
+		$this->extConf['ipFilter'] = $this->extConf['ipFilter'] ? $this->sanitizeData($this->extConf['ipFilter']) : '';
 
 		// do nothing if a backend user is logged in and ignoreBackendUsers is set
 		if ($this->extConf['ignoreBackendUsers'] && $GLOBALS['TSFE']->beUserLogin) {
+			$this->trackTime('end');
+			$this->logTimeTracking();
+			return '';
+		}
+
+		// do nothing if ipFilter is set and matches the remote ip address
+		if ($this->extConf['ipFilter'] && t3lib_div::cmpIP($this->statData['remote_addr'], $this->extConf['ipFilter'])) {
+			//t3lib_div::devLog('ip filter matching',$this->extKey,0,array($this->statData['remote_addr'], $this->extConf['ipFilter'])); 
 			$this->trackTime('end');
 			$this->logTimeTracking();
 			return '';
@@ -389,14 +398,14 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 * @access public
 	 * @return void
 	 */
-	function initApi() {
+	function initApi() {/*{{{*/
 		// collect time data
 		$this->now = time();
 		$this->getTimeData();
 
 		// instantiate the shared library
 		$this->kestatslib = t3lib_div::makeInstance('tx_kestats_lib');
-	}
+	}/*}}}*/
 
 	/**
 	 * Wrapper for kestatslib->increaseCounter
@@ -413,7 +422,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 * @access public
 	 * @return void
 	 */
-	function increaseCounter(
+	function increaseCounter(/*{{{*/
 						$category,
 						$compareFieldList,
 						$element_title='',
@@ -437,7 +446,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 						$element_type,
 						$stat_type,
 						$parent_uid);
-	}
+	}/*}}}*/
 
 	/**
 	 * trackTime 

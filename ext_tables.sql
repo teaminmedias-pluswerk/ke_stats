@@ -29,7 +29,7 @@ CREATE TABLE tx_kestats_statdata (
 );
 
 #
-# Table structure for table 'tx_kestats_statdata'
+# Table structure for table 'tx_kestats_cache'
 #
 CREATE TABLE tx_kestats_cache (
 	uid int(11) NOT NULL auto_increment,
@@ -38,11 +38,12 @@ CREATE TABLE tx_kestats_cache (
 	groupby text NOT NULL,
 	result longtext NOT NULL,
 	
-	PRIMARY KEY (uid)
+	PRIMARY KEY (uid),
+	KEY whereclause_index (whereclause (260), orderby (20), groupby (20))
 );
 
 #
-# Table structure for table 'tx_kestats_statdata'
+# Table structure for table 'tx_kestats_queue'
 #
 CREATE TABLE tx_kestats_queue (
 	uid int(11) NOT NULL auto_increment,

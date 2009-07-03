@@ -136,7 +136,7 @@ class tx_kestats_lib {
 			$fromToArray['from_year'] = date('Y') - 1;
 			$fromToArray['to_year'] = date('Y');
 			$fromToArray['from_month'] = date('n');
-			$fromToArray['to_month'] = date('n');
+			$fromToArray['to_month'] = date('n') - 1;
 
 			// monthly process of pageviews
 			$columns = 'element_title,counter';

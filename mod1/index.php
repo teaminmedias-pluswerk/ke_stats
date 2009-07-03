@@ -252,6 +252,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 								legend: { backgroundOpacity:0 },
 								lines: { show:true, fill:true },
 								xaxis: { tickFormatter: monthTickFormatter, tickDecimals: 0 },
+								xaxis: { min:0 }
 							}
 							);
 

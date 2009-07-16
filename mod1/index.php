@@ -1023,8 +1023,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 					$content .= '<a href="JavaScript:location.reload(true);" class="buttonlink">'.$GLOBALS['LANG']->getLL('refresh').'</a>';
 
 					// get the initial entries
-					$where_clause = 'type="'.STAT_TYPE_TRACKING.'"';
-					$where_clause .= ' AND category="'.CATEGORY_TRACKING_INITIAL.'"';
+					$where_clause = 'type='.$GLOBALS['TYPO3_DB']->fullQuoteStr(STAT_TYPE_TRACKING, $this->tablename);
+					$where_clause .= ' AND category='.$GLOBALS['TYPO3_DB']->fullQuoteStr(CATEGORY_TRACKING_INITIAL, $this->tablename);
 					$where_clause .= $this->subpages_query;
 
 					// get the number of entries to display
@@ -1054,8 +1054,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 												);
 
 						foreach ($tableInfoList as $category) {
-							$where_clause = 'type="'.STAT_TYPE_TRACKING.'"';
-							$where_clause .= ' AND category="'.$category.'"';
+							$where_clause = 'type=' . $GLOBALS['TYPO3_DB']->fullQuoteStr(STAT_TYPE_TRACKING, $this->tablename);
+							$where_clause .= ' AND category=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($category, $this->tablename);
 							$where_clause .= ' AND parent_uid='.$row['uid'];
 							$resDetail = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*',$this->tablename,$where_clause);
 							$rowDetail = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($resDetail);
@@ -1079,9 +1079,9 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 						}
 
 						// get the details
-						$where_clause = 'type="'.STAT_TYPE_TRACKING.'"';
-						$where_clause .= ' AND category="'.CATEGORY_TRACKING_PAGES.'"';
-						$where_clause .= ' AND parent_uid="'.$row['uid'].'"';
+						$where_clause = 'type=' . $GLOBALS['TYPO3_DB']->fullQuoteStr(STAT_TYPE_TRACKING, $this->tablename);
+						$where_clause .= ' AND category=' . $GLOBALS['TYPO3_DB']->fullQuoteStr(CATEGORY_TRACKING_PAGES, $this->tablename);
+						$where_clause .= ' AND parent_uid=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($row['uid'], $this->tablename);
 						$resDetail = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*',$this->tablename,$where_clause,'','crdate');
 
 						$printRows = array();

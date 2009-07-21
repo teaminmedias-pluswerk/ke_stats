@@ -124,7 +124,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	}/*}}}*/
 
 	/**
-	 * Main function of the module. 
+	 * Main function of the module.
 	 *
 	 * @return	string
 	 */
@@ -157,8 +157,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			$this->doc->JScode .= '<script language="javascript" type="text/javascript" src="../flotr/lib/prototype-1.6.0.2.js"></script>';
 			$this->doc->JScode .= '<!--[if IE]><script language="javascript" type="text/javascript" src="../flotr/lib/excanvas.js"></script><![endif]-->';
 			$this->doc->JScode .= '<!--[if IE]><script language="javascript" type="text/javascript" src="../flotr/lib/base64.js"></script><![endif]-->';
-			$this->doc->JScode .= '<script language="javascript" type="text/javascript" src="../flotr/canvas2image.js"></script>';
-			$this->doc->JScode .= '<script language="javascript" type="text/javascript" src="../flotr/canvastext.js"></script>';
+			$this->doc->JScode .= '<script language="javascript" type="text/javascript" src="../flotr/lib/canvas2image.js"></script>';
+			$this->doc->JScode .= '<script language="javascript" type="text/javascript" src="../flotr/lib/canvastext.js"></script>';
 			$this->doc->JScode .= '<script language="javascript" type="text/javascript" src="../flotr/flotr-0.2.0-alpha.js"></script>';
 
 			// set some additional styles
@@ -206,18 +206,18 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 						function monthTickFormatter(inputNumber) {
 							output = inputNumber;
 							switch (inputNumber) {
-								case "0": output = \'' . $this->overviewPageData['pageviews_and_visits'][0]['element_title'] . '\'; break; 
-								case "1": output = \'' . $this->overviewPageData['pageviews_and_visits'][1]['element_title'] . '\'; break; 
-								case "2": output = \'' . $this->overviewPageData['pageviews_and_visits'][2]['element_title'] . '\'; break; 
-								case "3": output = \'' . $this->overviewPageData['pageviews_and_visits'][3]['element_title'] . '\'; break; 
-								case "4": output = \'' . $this->overviewPageData['pageviews_and_visits'][4]['element_title'] . '\'; break; 
-								case "5": output = \'' . $this->overviewPageData['pageviews_and_visits'][5]['element_title'] . '\'; break; 
-								case "6": output = \'' . $this->overviewPageData['pageviews_and_visits'][6]['element_title'] . '\'; break; 
-								case "7": output = \'' . $this->overviewPageData['pageviews_and_visits'][7]['element_title'] . '\'; break; 
-								case "8": output = \'' . $this->overviewPageData['pageviews_and_visits'][8]['element_title'] . '\'; break; 
-								case "9": output = \'' . $this->overviewPageData['pageviews_and_visits'][9]['element_title'] . '\'; break; 
-								case "10": output = \'' . $this->overviewPageData['pageviews_and_visits'][10]['element_title'] . '\'; break; 
-								case "11": output = \'' . $this->overviewPageData['pageviews_and_visits'][11]['element_title'] . '\'; break; 
+								case "0": output = \'' . $this->overviewPageData['pageviews_and_visits'][0]['element_title'] . '\'; break;
+								case "1": output = \'' . $this->overviewPageData['pageviews_and_visits'][1]['element_title'] . '\'; break;
+								case "2": output = \'' . $this->overviewPageData['pageviews_and_visits'][2]['element_title'] . '\'; break;
+								case "3": output = \'' . $this->overviewPageData['pageviews_and_visits'][3]['element_title'] . '\'; break;
+								case "4": output = \'' . $this->overviewPageData['pageviews_and_visits'][4]['element_title'] . '\'; break;
+								case "5": output = \'' . $this->overviewPageData['pageviews_and_visits'][5]['element_title'] . '\'; break;
+								case "6": output = \'' . $this->overviewPageData['pageviews_and_visits'][6]['element_title'] . '\'; break;
+								case "7": output = \'' . $this->overviewPageData['pageviews_and_visits'][7]['element_title'] . '\'; break;
+								case "8": output = \'' . $this->overviewPageData['pageviews_and_visits'][8]['element_title'] . '\'; break;
+								case "9": output = \'' . $this->overviewPageData['pageviews_and_visits'][9]['element_title'] . '\'; break;
+								case "10": output = \'' . $this->overviewPageData['pageviews_and_visits'][10]['element_title'] . '\'; break;
+								case "11": output = \'' . $this->overviewPageData['pageviews_and_visits'][11]['element_title'] . '\'; break;
 							}
 							return output;
 						}
@@ -248,7 +248,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 								{ data:pageviews, label:\'' . $LANG->getLL('category_pages_all') . '\', color: \'#0000ff\', points:{show: true} },
 								{ data:visits, label:\'' . $LANG->getLL('category_visits') . '\', color: \'#009933\', points:{show: true} }
 							],
-							{ 
+							{
 								legend: { backgroundOpacity:0 },
 								lines: { show:true, fill:true },
 								xaxis: { tickFormatter: monthTickFormatter, tickDecimals: 0 },
@@ -265,8 +265,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			//$this->content .= $this->doc->spacer(5);
 			//$this->content .= $this->doc->section('',$this->doc->funcMenu($headerSection,t3lib_BEfunc::getFuncMenu($this->id,'SET[function]',$this->MOD_SETTINGS['function'],$this->MOD_MENU['function'])));
 			$this->content .= $this->doc->divider(5);
-	
-			// get the extension-manager configuration 
+
+			// get the extension-manager configuration
 			$this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['ke_stats']);
 			$this->extConf['enableIpLogging'] = $this->extConf['enableIpLogging'] ? 1 : 0;
 			$this->extConf['enableTracking'] = $this->extConf['enableTracking'] ? 1 : 0;
@@ -276,8 +276,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			// find out what types we have statistics for
 			// extension elements are filtered by their pid
 			//
-			// C. B., 11.Jul.2008: 
-			// this is very slow, so we assume having every type available here 
+			// C. B., 11.Jul.2008:
+			// this is very slow, so we assume having every type available here
 			/*
 			$typesArray = array();
 			$where = '('.$this->tablename.'.type=\'extension\' AND '.$this->tablename.'.element_pid IN ('.$this->kestatslib->pagelist.')'. ')';
@@ -288,7 +288,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
 					$typesArray[$row['type']] = $LANG->getLL('type_'.$row['type']) ? $LANG->getLL('type_'.$row['type']) : $row['type'];
 				}
-			} 
+			}
 
 			// put "extensions" to the end of the array
 			// (just for optical reasons)
@@ -304,7 +304,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			// elements
 			$typesArray = array(
 				'overview' => $LANG->getLL('overview'),
-				STAT_TYPE_PAGES => $LANG->getLL('type_' . STAT_TYPE_PAGES), 
+				STAT_TYPE_PAGES => $LANG->getLL('type_' . STAT_TYPE_PAGES),
 				STAT_TYPE_EXTENSION => $LANG->getLL('type_' . STAT_TYPE_EXTENSION),
 				'csvdownload' => $LANG->getLL('csvdownload')
 			);
@@ -314,8 +314,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				$typesArray[STAT_TYPE_TRACKING] = $LANG->getLL('type_' . STAT_TYPE_TRACKING);
 			}
 
-			// the query to filter the elements based on the selected page in the pagetree 
-			// extension elements are filtered by their pid 
+			// the query to filter the elements based on the selected page in the pagetree
+			// extension elements are filtered by their pid
 			if (strlen($this->kestatslib->pagelist)>0) {
 				if ($this->tabmenu->getSelectedValue('type') == STAT_TYPE_EXTENSION) {
 					$this->subpages_query = ' AND '.$this->tablename.'.element_pid IN ('.$this->kestatslib->pagelist.')';
@@ -346,14 +346,14 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 					$this->tabmenu->initMenu('category_user_agents',CATEGORY_BROWSERS);
 					$this->tabmenu->initMenu('category_other',CATEGORY_OPERATING_SYSTEMS);
 
-					// render tab menu: monthly or details of one month 
+					// render tab menu: monthly or details of one month
 					$this->content .= $this->tabmenu->generateTabMenu(array(
 								'list_monthly_process' => $LANG->getLL('list_full'),
 								'list_details_of_a_month' => $LANG->getLL('list_details'),
 								),'list_type');
 
 					if ($this->tabmenu->getSelectedValue('list_type') == 'list_monthly_process') {
-						// render tab menu: category 
+						// render tab menu: category
 						$this->content .= $this->tabmenu->generateTabMenu(array(
 									'category_monthly_pages' => $LANG->getLL('category_monthly_pages'),
 									'category_monthly_pages_fe_users' => $LANG->getLL('category_monthly_pages_fe_users'),
@@ -361,7 +361,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 									'category_monthly_visits_fe_users' => $LANG->getLL('category_monthly_visits_fe_users')
 									),'list_type_category_monthly');
 					} else if ($this->tabmenu->getSelectedValue('list_type') == 'list_details_of_a_month') {
-						// render tab menu: category 
+						// render tab menu: category
 						$this->content .= $this->tabmenu->generateTabMenu(array(
 									'category_pages' => $LANG->getLL('category_pages'),
 									'category_time' => $LANG->getLL('category_time'),
@@ -377,7 +377,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 										),'category_pages');
 						}
 						if ($this->tabmenu->getSelectedValue('list_type_category') == 'category_referers') {
-							// render tab menu: referers 
+							// render tab menu: referers
 							$this->content .= $this->tabmenu->generateTabMenu(array(
 										CATEGORY_REFERERS_EXTERNAL_WEBSITES => $LANG->getLL('category_referers_websites'),
 										CATEGORY_REFERERS_SEARCHENGINES => $LANG->getLL('category_referers_search_engines'),
@@ -385,7 +385,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 										),'category_referers');
 						}
 						if ($this->tabmenu->getSelectedValue('list_type_category') == 'category_time') {
-							// render tab menu: time 
+							// render tab menu: time
 							$this->content .= $this->tabmenu->generateTabMenu(array(
 										'category_time_hits' => $LANG->getLL('category_time_hits'),
 										'category_time_visits' => $LANG->getLL('category_time_visits'),
@@ -415,7 +415,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 							}
 						}
 						if ($this->tabmenu->getSelectedValue('list_type_category') == 'category_user_agents') {
-							// render tab menu: user agents 
+							// render tab menu: user agents
 							$this->content .= $this->tabmenu->generateTabMenu(array(
 										CATEGORY_BROWSERS => $LANG->getLL('category_browsers'),
 										CATEGORY_ROBOTS => $LANG->getLL('category_robots'),
@@ -423,7 +423,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 										),'category_user_agents');
 						}
 						if ($this->tabmenu->getSelectedValue('list_type_category') == 'category_other') {
-							// render tab menu: other 
+							// render tab menu: other
 							$this->content .= $this->tabmenu->generateTabMenu(array(
 										CATEGORY_OPERATING_SYSTEMS => $LANG->getLL('category_operating_systems'),
 										CATEGORY_IP_ADRESSES => $LANG->getLL('category_ip_addresses'),
@@ -445,7 +445,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 							$extensionTypesArray[$row['category']] = $tabname;
 							$this->allowedExtensionTypes[] = $row['category'];
 						}
-					} 
+					}
 
 					// Init tab menus
 					$this->tabmenu->initMenu('extension_type','');
@@ -453,8 +453,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 					// render the extension types tabs
 					$this->content .= $this->tabmenu->generateTabMenu($extensionTypesArray,'extension_type');
 				}
-			} 
-			
+			}
+
 			// Add info about the statistic type to the csv table
 			// Current page title
 			if ($this->id) {
@@ -526,7 +526,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 					$defaultParams . '&list_type_category=category_pages'
 				);
 
-				// render tab menu: referers 
+				// render tab menu: referers
 				$this->content .= '<h3 style="clear:both;">' . $GLOBALS['LANG']->getLL('csvdownload_referer') . '</h3>';
 				$labelPrefix = $GLOBALS['LANG']->getLL('csvdownload_referer') . ' - ';
 				$this->content .= $this->tabmenu->generateLinkMenu(
@@ -580,7 +580,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 				$this->content .= '<h3 style="clear:both;">' . $GLOBALS['LANG']->getLL('csvdownload_user_agents') . '</h3>';
 
-				// render tab menu: user agents 
+				// render tab menu: user agents
 				$this->content .= $this->tabmenu->generateLinkMenu(
 					array(
 						CATEGORY_BROWSERS => $LANG->getLL('category_browsers'),
@@ -593,7 +593,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 				$this->content .= '<h3 style="clear:both;">' . $GLOBALS['LANG']->getLL('csvdownload_more_statistics') . '</h3>';
 
-				// render tab menu: other 
+				// render tab menu: other
 
 				// display ip related options only if ip-logging is enabled
 				$linkArray = array( CATEGORY_OPERATING_SYSTEMS => $LANG->getLL('category_operating_systems'));
@@ -614,7 +614,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 			// Render content
 			$this->content .= $this->moduleContent();
-			
+
 			// ShortCut
 			if ($BE_USER->mayMakeShortcut())	{
 				$this->content.=$this->doc->spacer(20).$this->doc->section('',$this->doc->makeShortcutIcon('id',implode(',',array_keys($this->MOD_MENU)),$this->MCONF['name']));
@@ -636,11 +636,11 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	}/*}}}*/
 
 	/**
-	 * renderOverviewPage 
+	 * renderOverviewPage
 	 *
 	 * Renders the overview for the current page.
 	 * Wrapper for the function in kestatslib.
-	 * 
+	 *
 	 * @access public
 	 * @return void
 	 */
@@ -668,15 +668,15 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 		//debug($this->overviewPageData);
 		//debug($this->overviewPageData['extensionlist']);
-		
+
 		return $content;
 	}/*}}}*/
 
 	/**
 	 * Returns a selectorboxes for month/year/language/type for the given data
-	 * 
-	 * @param array $statType 
-	 * @param array $statCategory 
+	 *
+	 * @param array $statType
+	 * @param array $statCategory
 	 * @return string
 	 */
 	function renderSelectorMenu($statType,$statCategory) {/*{{{*/
@@ -731,7 +731,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
 				$this->elementTypesArray[$row['element_type']] = $GLOBALS['LANG']->getLL('selector_type').' '.$row['element_type'];
 			}
-		} 
+		}
 
 		// is there more than one element language?
 		$where_clause = 'type=\''.$statType.'\'';
@@ -744,7 +744,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
 				$this->elementLanguagesArray[$row['element_language']] = $this->getLanguageName($row['element_language']);
 			}
-		} 
+		}
 
 		// do the menu rendering
 		$content .= $this->tabmenu->generateDropDownMenu($yearArray,'year');
@@ -759,9 +759,9 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	}/*}}}*/
 
 	/**
-	 * returns the cleartext name of a language uid 
-	 * 
-	 * @param integer $sys_language_uid 
+	 * returns the cleartext name of a language uid
+	 *
+	 * @param integer $sys_language_uid
 	 * @return string
 	 */
 	function getLanguageName($sys_language_uid) {/*{{{*/
@@ -800,7 +800,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		switch($this->tabmenu->getSelectedValue('type')) {
 
 			// the overview page
-			case 'overview': 
+			case 'overview':
 				$content .= $this->renderOverviewPage();
 			break;
 
@@ -1045,7 +1045,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 						$tableHeader = '';
 
 						$headerRowCounter = 0;
-						$tableInfoList = array(	
+						$tableInfoList = array(
 												CATEGORY_TRACKING_BROWSER,
 												CATEGORY_TRACKING_OPERATING_SYSTEM,
 												CATEGORY_TRACKING_IP_ADRESS,
@@ -1103,7 +1103,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 							}
 							if (strlen($printRow['element_title']) > $this->maxLengthTableContent) {
 								$printRow['element_title'] = substr($printRow['element_title'],0,$this->maxLengthTableContent).'...';
-							} 
+							}
 
 							// print some values only if they differ from the last values
 							$cleanUpFiels = 'element_language,element_uid,date';
@@ -1144,11 +1144,11 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	}/*}}}*/
 
 	/**
-	 * renderUpdateInformation 
+	 * renderUpdateInformation
 	 *
 	 * Print information about to what time the update has been made (only if
 	 * asynchronousDataRefreshing is activated)
-	 * 
+	 *
 	 * @access public
 	 * @return void
 	 */
@@ -1198,15 +1198,15 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 		return $this->kestatslib->getStatResults($statType, $statCategory, $columns, $onlySum, $orderBy, $groupBy, $encode_title_to_utf8, $fromToArray, $element_language, $element_type);
 
-		// KENNZIFFER, C. B., 05.Jun.2009: 
+		// KENNZIFFER, C. B., 05.Jun.2009:
 		// Now in kestatslib ...
 		/*
 		$yearArray = $this->kestatslib->getDateArray($fromToArray['from_year'],$fromToArray['from_month'],$fromToArray['to_year'],$fromToArray['to_month']);
-		
+
 		// read the stat data into an array
 		$lineCounter = 0;
 		foreach($yearArray as $year => $monthArray){
-			foreach($monthArray as $month => $daysPerMonth){	
+			foreach($monthArray as $month => $daysPerMonth){
 
 				// if we are dealing with data of a month in the past, we may use the cache
 				if ($year < date('Y') || ($year == date('Y') && $month < date('m'))) {
@@ -1226,13 +1226,13 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 					$where_clause .= ' AND element_type='.intval($this->tabmenu->getSelectedValue('element_type')).'';
 				}
 				$where_clause .= $this->subpages_query;
-				
+
 				if ($useCache) {
 					// is there a cache entry?
 					// if yes, use this instead of really querying the stats-table
-					$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*',$this->tablenameCache, 
+					$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*',$this->tablenameCache,
 					'whereclause=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($where_clause, $this->tablenameCache)
-					. ' AND groupby=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($groupBy, $this->tablenameCache) 
+					. ' AND groupby=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($groupBy, $this->tablenameCache)
 					. ' AND orderby=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($orderBy, $this->tablenameCache) );
 
 					if ($GLOBALS['TYPO3_DB']->sql_num_rows($res)) {
@@ -1267,12 +1267,12 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 										));
 						}
 					}
-				} 
+				}
 
 				if (!$useCache) {
 					$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*',$this->tablename,$where_clause,$groupBy,$orderBy);
 				}
-				
+
 				$sum = 0;
 
 				// render brackets around the year in CSV mode (otherwise excel doesn't like it)
@@ -1306,7 +1306,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 									$resultArray[$i]['counter'] += $row['counter'];
 									$element_already_counted = 1;
 								}
-							} 
+							}
 
 							// Add all columns we want to display to the result
 							// table (this will be at least element_title and column)
@@ -1336,11 +1336,11 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	}/*}}}*/
 
 	/**
-	 * addTypeAndLanguageToColumns 
+	 * addTypeAndLanguageToColumns
 	 * Add a column for the type and the language, if more than one type
 	 * (language) exists and none is yet selected
-	 * 
-	 * @param string $columns 
+	 *
+	 * @param string $columns
 	 * @access public
 	 * @return string
 	 */
@@ -1356,9 +1356,9 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 	/**
 	 * returns year and month of the first and the last entry of given statistic types / categories
-	 * 
-	 * @param string $statType 
-	 * @param string $statCategory 
+	 *
+	 * @param string $statType
+	 * @param string $statCategory
 	 * @return array
 	 */
 	function getFirstAndLastEntries($statType,$statCategory) {/*{{{*/
@@ -1399,7 +1399,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * returns a html table, rendered from the array $dataRows.
 	 * $dataRows must contains one row for each row in the table.
 	 * Each row is an array associative containing the data for the row.
-	 * 
+	 *
 	 * @param string $caption: Table-caption
 	 * @param string $columns: comma-separated list of column-names used in the table (corrsponding to the array-keys in each row)
 	 * @param array $dataRows: data array
@@ -1433,7 +1433,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				foreach ($dataRow as $data) {
 					if (!isset($sumRow[$column_number])) {
 						$sumRow[$column_number] = 0;
-					} 
+					}
 					$sumRow[$column_number] += intval($data);
 					$column_number++;
 				}
@@ -1532,7 +1532,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 								}
 								if (strlen($formatted_data) > $this->maxLengthURLs) {
 									$formatted_data = substr($formatted_data,0,$this->maxLengthURLs).'...';
-								} 
+								}
 								// sanitize the output
 								// since 5.5.2008 data is already sanitized in the frontend
 								// plugin, but maybe there are older values in the
@@ -1550,7 +1550,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 								$formatted_data = $data;
 								if (strlen($formatted_data) > $this->maxLengthTableContent) {
 									$formatted_data = substr($formatted_data,0,$this->maxLengthTableContent).'...';
-								} 
+								}
 							}
 							$this->addCsvCol(strip_tags($formatted_data));
 						} else {
@@ -1638,13 +1638,13 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			}
 		}
 		$content .= '</table>';
-		return $content;	
+		return $content;
 	}/*}}}*/
 
 	/**
-	 * addCsvCol 
-	 * 
-	 * @param string $content 
+	 * addCsvCol
+	 *
+	 * @param string $content
 	 * @access public
 	 * @return void
 	 */
@@ -1654,8 +1654,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	}/*}}}*/
 
 	/**
-	 * addCsvRow 
-	 * 
+	 * addCsvRow
+	 *
 	 * @access public
 	 * @return void
 	 */
@@ -1666,8 +1666,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	}/*}}}*/
 
 	/**
-	 * outputCSV 
-	 * 
+	 * outputCSV
+	 *
 	 * @access public
 	 * @return void
 	 */
@@ -1682,7 +1682,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 		$content = '';
 		foreach ($this->csvContent as $row) {
-			//function csvValues($row,$delim=',',$quote='"') 
+			//function csvValues($row,$delim=',',$quote='"')
 			$content .= t3lib_div::csvValues($row) . "\n";
 		}
 
@@ -1697,7 +1697,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 	/**
 	 * returns the css for the result tables
-	 * 
+	 *
 	 * @return string
 	 */
 	function getTableCSS() {/*{{{*/
@@ -1707,7 +1707,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	float:left;
 	margin: .5em 3px 0 0;
 	font-size: 10px;
-	font-weight: bold; 
+	font-weight: bold;
 	border: 1px solid gray;
 	display:block;
 	padding:2px;
@@ -1803,14 +1803,14 @@ table.ke-stats-table tbody a:visited:after {
 
 
 	/**
-	 * loadFrontendTSconfig 
+	 * loadFrontendTSconfig
 	 *
 	 * gives access to the frontend TSconfig
 	 * loads the TSconfig for the given page-uid
 	 * and the plugin-TSconfig on this page for $plugin_name
-	 * 
-	 * @param mixed $pageUid 
-	 * @param string $plugin_name 
+	 *
+	 * @param mixed $pageUid
+	 * @param string $plugin_name
 	 * @access public
 	 * @return void
 	 */

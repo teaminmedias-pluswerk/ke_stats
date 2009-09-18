@@ -39,13 +39,13 @@ require_once(PATH_BE_KESTATS.'lib/class.tx_kestats_lib.php');
  */
 class tx_kestats_pi1 extends tslib_pibase {
 	// Same as class name
-	var $prefixId = 'tx_kestats_pi1';		
+	var $prefixId = 'tx_kestats_pi1';
 
 	// Path to this script relative to the extension dir.
-	var $scriptRelPath = 'pi1/class.tx_kestats_pi1.php';	
+	var $scriptRelPath = 'pi1/class.tx_kestats_pi1.php';
 
 	// The extension key.
-	var $extKey = 'ke_stats';	
+	var $extKey = 'ke_stats';
 
 	// The main table.
 	var $tableName = 'tx_kestats_statdata';
@@ -57,7 +57,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 	var $debug_email = '';
 	var $debug_mail_if_unknown = 0;
 	var $debug_mail_queries = 0;
-	var $debug_timetracking = 0;
+	var $debug_timetracking = 1;
 	var $debug_queries = array();
 	var $timetracking = array();
 	var $timetracking_start = 0;
@@ -70,7 +70,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 *
 	 * @param	string		$content: The PlugIn content
 	 * @param	array		$conf: The PlugIn configuration
-	 * @return	
+	 * @return
 	 */
 	function main($content,$conf)	{/*{{{*/
 		$this->conf = $conf;
@@ -89,7 +89,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 			return '';
 		}
 
-		// init timetracking 
+		// init timetracking
 		if ($this->debug_timetracking) {
 			$this->timetracking_start = t3lib_div::milliseconds();
 		}
@@ -97,7 +97,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 		// ignore calls without user agent where the remote address is like the server address
 		// this is necessary to ignore certain types of calls, for example ajax calls to typo3 pages
 		if ( trim(t3lib_div::getIndpEnv('HTTP_USER_AGENT')) == ''
-			&& isset($_SERVER['SERVER_ADDR']) 
+			&& isset($_SERVER['SERVER_ADDR'])
 			&& $_SERVER['SERVER_ADDR'] == t3lib_div::getIndpEnv('REMOTE_ADDR')) {
 			return '';
 		}
@@ -115,23 +115,15 @@ class tx_kestats_pi1 extends tslib_pibase {
 		$element_title = $GLOBALS['TSFE']->rootLine[sizeof($GLOBALS['TSFE']->rootLine)-1]['title'];
 		$element_language = t3lib_div::_GP('L') ? intval(t3lib_div::_GP('L')) : 0;
 
-		// get the extension-manager configuration 
+		// get the extension-manager configuration
 		$this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['ke_stats']);
 		$this->extConf['enableIpLogging'] = $this->extConf['enableIpLogging'] ? 1 : 0;
 		$this->extConf['enableTracking'] = $this->extConf['enableTracking'] ? 1 : 0;
 		$this->extConf['ignoreBackendUsers'] = $this->extConf['ignoreBackendUsers'] ? 1 : 0;
-		$this->extConf['ipFilter'] = $this->extConf['ipFilter'] ? $this->sanitizeData($this->extConf['ipFilter']) : '';
+		$this->extConf['ignoreRobots'] = $this->extConf['ignoreRobots'] ? 1 : 0;
 
 		// do nothing if a backend user is logged in and ignoreBackendUsers is set
 		if ($this->extConf['ignoreBackendUsers'] && $GLOBALS['TSFE']->beUserLogin) {
-			$this->trackTime('end');
-			$this->logTimeTracking();
-			return '';
-		}
-
-		// do nothing if ipFilter is set and matches the remote ip address
-		if ($this->extConf['ipFilter'] && t3lib_div::cmpIP($this->statData['remote_addr'], $this->extConf['ipFilter'])) {
-			//t3lib_div::devLog('ip filter matching',$this->extKey,0,array($this->statData['remote_addr'], $this->extConf['ipFilter'])); 
 			$this->trackTime('end');
 			$this->logTimeTracking();
 			return '';
@@ -141,7 +133,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 		// Count PAGE IMPRESSIONS
 		// (only from real visitors / humans)
 		//***********************************************
-		
+
 		// Count this page impression taking into account if it is a human visitor or a robot.
 		if ($this->conf['enableStatisticsPages']) {
 			if (!$this->statData['is_robot']) {
@@ -162,7 +154,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 		//***********************************************
 		// Count VISITS
 		//***********************************************
-		
+
 		if ($this->conf['enableStatisticsPages']) {
 			if (!$this->statData['is_robot']) {
 				// Count this visitor (session), if it not has been counted before.
@@ -304,7 +296,9 @@ class tx_kestats_pi1 extends tslib_pibase {
 				}
 			} else {
 				// count robots
-				$this->increaseCounter(CATEGORY_ROBOTS,'element_uid,element_title,year,month',$this->statData['user_agent_name'],$element_uid);
+					if (!$this->extConf['ignoreRobots']) {
+					$this->increaseCounter(CATEGORY_ROBOTS,'element_uid,element_title,year,month',$this->statData['user_agent_name'],$element_uid);
+				}
 			}
 		}
 
@@ -359,8 +353,8 @@ class tx_kestats_pi1 extends tslib_pibase {
 							$this->debug_queries[] = $GLOBALS['TYPO3_DB']->SELECTquery('*',$extConf['table'],$where);
 							if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
 								$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
-								$element_pid = $row[$extConf['pidField']]; 
-								$element_title = $row[$extConf['titleField']]; 
+								$element_pid = $row[$extConf['pidField']];
+								$element_title = $row[$extConf['titleField']];
 								$element_type = $GLOBALS['TSFE']->type;
 								$element_language = t3lib_div::_GP('L') ? intval(t3lib_div::_GP('L')) : 0;
 								$category = $extKey;
@@ -378,16 +372,16 @@ class tx_kestats_pi1 extends tslib_pibase {
 
 		$this->trackTime('end');
 		$this->logTimeTracking();
-		
+
 		return '';
 	}/*}}}*/
 
 	/**
-	 * initApi 
+	 * initApi
 	 *
 	 * init the API (will be only called if an extension from outside wants to
 	 * call ke_stats, does not call main())
-	 * 
+	 *
 	 * example for usage of the API:
 	 *
 	 * $keStatsObj = t3lib_div::getUserObj('EXT:ke_stats/pi1/class.tx_kestats_pi1.php:tx_kestats_pi1');
@@ -398,31 +392,31 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 * @access public
 	 * @return void
 	 */
-	function initApi() {/*{{{*/
+	function initApi() {
 		// collect time data
 		$this->now = time();
 		$this->getTimeData();
 
 		// instantiate the shared library
 		$this->kestatslib = t3lib_div::makeInstance('tx_kestats_lib');
-	}/*}}}*/
+	}
 
 	/**
 	 * Wrapper for kestatslib->increaseCounter
-	 * 
-	 * @param string $category 
-	 * @param string $compareFieldList 
-	 * @param string $element_title 
-	 * @param int $element_uid 
-	 * @param int $element_pid 
-	 * @param int $element_language 
-	 * @param int $element_type 
-	 * @param string $stat_type 
-	 * @param int $parent_uid 
+	 *
+	 * @param string $category
+	 * @param string $compareFieldList
+	 * @param string $element_title
+	 * @param int $element_uid
+	 * @param int $element_pid
+	 * @param int $element_language
+	 * @param int $element_type
+	 * @param string $stat_type
+	 * @param int $parent_uid
 	 * @access public
 	 * @return void
 	 */
-	function increaseCounter(/*{{{*/
+	function increaseCounter(
 						$category,
 						$compareFieldList,
 						$element_title='',
@@ -446,12 +440,12 @@ class tx_kestats_pi1 extends tslib_pibase {
 						$element_type,
 						$stat_type,
 						$parent_uid);
-	}/*}}}*/
+	}
 
 	/**
-	 * trackTime 
-	 * 
-	 * @param string $desc 
+	 * trackTime
+	 *
+	 * @param string $desc
 	 * @access public
 	 * @return void
 	 */
@@ -462,8 +456,8 @@ class tx_kestats_pi1 extends tslib_pibase {
 	}/*}}}*/
 
 	/**
-	 * logTimeTracking 
-	 * 
+	 * logTimeTracking
+	 *
 	 * @access public
 	 * @return void
 	 */
@@ -475,8 +469,8 @@ class tx_kestats_pi1 extends tslib_pibase {
 
 	/**
 	 * returns a hostname without 'www.' in the beginning
-	 * 
-	 * @param string $hostname 
+	 *
+	 * @param string $hostname
 	 * @return string
 	 */
 	function getHostnameWithoutWWW($hostname) {/*{{{*/
@@ -487,11 +481,11 @@ class tx_kestats_pi1 extends tslib_pibase {
 	}/*}}}*/
 
 	/**
-	 * sanitizeData 
+	 * sanitizeData
 	 *
 	 * sanitizeData
-	 * 
-	 * @param string $data 
+	 *
+	 * @param string $data
 	 * @access public
 	 * @return string
 	 */
@@ -500,9 +494,9 @@ class tx_kestats_pi1 extends tslib_pibase {
 	}/*}}}*/
 
 	/**
-	 * getTimeData 
+	 * getTimeData
 	 * collect the time information
-	 * 
+	 *
 	 * @access public
 	 * @return void
 	 */
@@ -515,9 +509,9 @@ class tx_kestats_pi1 extends tslib_pibase {
 	}/*}}}*/
 
 	/**
-	 * Collect all the needed statistical data for the different categories 
+	 * Collect all the needed statistical data for the different categories
 	 * and sanitize the input!
-	 * 
+	 *
 	 * @return 0
 	 */
 	function getData() {/*{{{*/
@@ -585,16 +579,16 @@ class tx_kestats_pi1 extends tslib_pibase {
 		// send mail if operating system is unknown
 		if (!$this->statData['is_robot']) {
 
-			if ($this->statData['operating_system'] == UNKNOWN_OPERATING_SYSTEM 
-				&& $this->statData['http_user_agent'] != EMPTY_USER_AGENT 
+			if ($this->statData['operating_system'] == UNKNOWN_OPERATING_SYSTEM
+				&& $this->statData['http_user_agent'] != EMPTY_USER_AGENT
 				&& $this->debug_mail_if_unknown
 				) {
 				$this->debugMail($this->statData,'[ke_stats] Unknown Operating System');
 			}
 
 			// send mail if user agent is unknown
-			if ($this->debug_mail_if_unknown 
-				&& $this->statData['user_agent_name'] == UNKNOWN_USER_AGENT 
+			if ($this->debug_mail_if_unknown
+				&& $this->statData['user_agent_name'] == UNKNOWN_USER_AGENT
 				&& $this->statData['http_user_agent'] != EMPTY_USER_AGENT
 				) {
 				$this->debugMail($this->statData,'[ke_stats] Unknown User Agent');
@@ -607,9 +601,9 @@ class tx_kestats_pi1 extends tslib_pibase {
 
 	/**
 	 * Extracts a search string from a given referer.
-	 * 
-	 * @param string $uri 
-	 * @param string $charset 
+	 *
+	 * @param string $uri
+	 * @param string $charset
 	 * @return string
 	 */
 	function getSearchwordFromReferer($uri,$charset="UTF-8") {/*{{{*/
@@ -642,12 +636,12 @@ class tx_kestats_pi1 extends tslib_pibase {
 	}/*}}}*/
 
 	/**
-	 * debugMail 
+	 * debugMail
 	 *
 	 * Sends a html mail with debug information
-	 * 
-	 * @param string $content 
-	 * @param string $subject 
+	 *
+	 * @param string $content
+	 * @param string $subject
 	 * @access public
 	 * @return void
 	 */
@@ -658,7 +652,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 
 		$header = "MIME-Version: 1.0\n";
 		$header .= "Content-type: text/html; charset=utf-8\n";
-		$header .= "From: ke_stats DEBUG\n"; 
+		$header .= "From: ke_stats DEBUG\n";
 
 		mail($this->debug_email,$subject,$content,$header);
 	}/*}}}*/

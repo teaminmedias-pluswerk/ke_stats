@@ -35,10 +35,10 @@ class tx_kestats_lib {
 	var $pagelist = '';
 
 	/**
-	 * tx_kestats_lib 
+	 * tx_kestats_lib
 	 *
 	 * Constructor
-	 * 
+	 *
 	 * @access public
 	 * @return void
 	 */
@@ -54,16 +54,16 @@ class tx_kestats_lib {
 	 *
 	 * Takes into account if asynchronous data refreshing is activated and
 	 * stores the data either in a queue table or updates it directly.
-	 * 
-	 * @param string $category 
-	 * @param string $compareFieldList 
-	 * @param string $element_title 
-	 * @param int $element_uid 
-	 * @param int $element_pid 
-	 * @param int $element_language 
-	 * @param int $element_type 
-	 * @param string $stat_type 
-	 * @param int $parent_uid 
+	 *
+	 * @param string $category
+	 * @param string $compareFieldList
+	 * @param string $element_title
+	 * @param int $element_uid
+	 * @param int $element_pid
+	 * @param int $element_language
+	 * @param int $element_type
+	 * @param string $stat_type
+	 * @param int $parent_uid
 	 * @access public
 	 * @return void
 	 */
@@ -105,14 +105,14 @@ class tx_kestats_lib {
 	}/*}}}*/
 
 	/**
-	 * refreshOverviewPageData 
+	 * refreshOverviewPageData
 	 *
 	 * In future versions there will be an overview page with more data. This
 	 * page will then stay in a cache and will be updated by a cron-cli-script.
 	 * Right now, there are only visitors and pageviews in order to keep the
 	 * rendering time fast.
-	 * 
-	 * @param int $pageUid 
+	 *
+	 * @param int $pageUid
 	 * @access public
 	 * @return void
 	 */
@@ -192,7 +192,7 @@ class tx_kestats_lib {
 				while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
 					$extensionTypes[] = $row['category'];
 				}
-			} 
+			}
 
 			// save extension list
 			$overviewPageData['extensionlist'] = implode(',', $extensionTypes);
@@ -236,7 +236,7 @@ class tx_kestats_lib {
 		// read the stat data into an array
 		$lineCounter = 0;
 		foreach($yearArray as $year => $monthArray){
-			foreach($monthArray as $month => $daysPerMonth){	
+			foreach($monthArray as $month => $daysPerMonth){
 
 				// if we are dealing with data of a month in the past, we may use the cache
 				if ($year < date('Y') || ($year == date('Y') && $month < date('m'))) {
@@ -256,8 +256,8 @@ class tx_kestats_lib {
 					$where_clause .= ' AND element_type=' . $element_type;
 				}
 
-				// the query to filter the elements based on the selected page in the pagetree 
-				// extension elements are filtered by their pid 
+				// the query to filter the elements based on the selected page in the pagetree
+				// extension elements are filtered by their pid
 				if (strlen($this->pagelist)>0) {
 					if ($statType == STAT_TYPE_EXTENSION) {
 						$subpages_query = ' AND tx_kestats_statdata.element_pid IN ('.$this->pagelist.')';
@@ -272,9 +272,9 @@ class tx_kestats_lib {
 				if ($useCache) {
 					// is there a cache entry?
 					// if yes, use this instead of really querying the stats-table
-					$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*','tx_kestats_cache', 
+					$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*','tx_kestats_cache',
 					'whereclause=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($where_clause, 'tx_kestats_cache')
-					. ' AND groupby=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($groupBy, 'tx_kestats_cache') 
+					. ' AND groupby=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($groupBy, 'tx_kestats_cache')
 					. ' AND orderby=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($orderBy, 'tx_kestats_cache') );
 
 					if ($GLOBALS['TYPO3_DB']->sql_num_rows($res)) {
@@ -309,12 +309,12 @@ class tx_kestats_lib {
 										));
 						}
 					}
-				} 
+				}
 
 				if (!$useCache) {
 					$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*','tx_kestats_statdata',$where_clause,$groupBy,$orderBy);
 				}
-				
+
 				$sum = 0;
 
 				// render brackets around the year in CSV mode (otherwise excel doesn't like it)
@@ -349,7 +349,7 @@ class tx_kestats_lib {
 									$resultArray[$i]['counter'] += $row['counter'];
 									$element_already_counted = 1;
 								}
-							} 
+							}
 
 							// Add all columns we want to display to the result
 							// table (this will be at least element_title and column)
@@ -381,13 +381,13 @@ class tx_kestats_lib {
 	}/*}}}*/
 
 	/**
-	 * getSubPages 
+	 * getSubPages
 	 *
-	 * returns commalist of all subpages of a given page 
+	 * returns commalist of all subpages of a given page
 	 * works recursive
 	 * Does explicitly not check for hidden pages and restricted access!
-	 * 
-	 * @param int $page_uid 
+	 *
+	 * @param int $page_uid
 	 * @access public
 	 * @return void
 	 */
@@ -407,17 +407,17 @@ class tx_kestats_lib {
 	}/*}}}*/
 
 	/**
-	 * getDateArray 
+	 * getDateArray
 	 *
 	 * returns an array with the years, month and day of the given period
-	 * 
-	 * @param int $from_year 
-	 * @param int $from_month 
-	 * @param int $to_year 
-	 * @param int $to_month 
+	 *
+	 * @param int $from_year
+	 * @param int $from_month
+	 * @param int $to_year
+	 * @param int $to_month
 	 * @access public
 	 * @return array
-	 * @author Christoph Blömer <info@christoph-bloemer.de>	 
+	 * @author Christoph Blömer <info@christoph-bloemer.de>
 	 */
 	function getDateArray($from_year,$from_month,$to_year,$to_month){/*{{{*/
 		$fromToArray=array();
@@ -459,10 +459,10 @@ class tx_kestats_lib {
   }/*}}}*/
 
 	/**
-	 * Increases a statistics counter. 
+	 * Increases a statistics counter.
 	 * If no counter exists that matches all fields the $compareFieldList, a new one is created.
-	 * 
-	 * @param string $data 
+	 *
+	 * @param string $data
 	 * @access public
 	 * @return void
 	 */
@@ -506,16 +506,16 @@ class tx_kestats_lib {
 	}/*}}}*/
 
 	/**
-	 * Returns the UID of an enty in the data table matching the $compareFieldList (comma-separated list). 
+	 * Returns the UID of an enty in the data table matching the $compareFieldList (comma-separated list).
 	 * If there is no matching Entry, it returns -1.
-	 * 
-	 * @param mixed $category 
-	 * @param mixed $compareFieldList 
-	 * @param int $element_uid 
-	 * @param int $element_pid 
-	 * @param string $element_title 
-	 * @param int $element_language 
-	 * @param int $element_type 
+	 *
+	 * @param mixed $category
+	 * @param mixed $compareFieldList
+	 * @param int $element_uid
+	 * @param int $element_pid
+	 * @param string $element_title
+	 * @param int $element_language
+	 * @param int $element_type
 	 * @return void
 	 */
 	function getStatEntry($category,$compareFieldList,$element_uid=0,$element_pid=0,$element_title='',$element_language=0,$element_type=0,$stat_type=STAT_TYPE_PAGES) {/*{{{*/
@@ -551,14 +551,14 @@ class tx_kestats_lib {
 	}/*}}}*/
 
 	/**
-	 * getOldestQueueEntry 
+	 * getOldestQueueEntry
 	 * find and return the oldest entry in the queue table
-	 * 
+	 *
 	 * @access public
 	 * @return array or false
 	 */
 	function getOldestQueueEntry() {/*{{{*/
-		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'tx_kestats_queue', '1=1', '', 'tstamp ASC', '1');
+		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'tx_kestats_queue', '1=1', '', 'uid ASC', '1');
 		if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
 			$result = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
 		} else {
@@ -568,13 +568,13 @@ class tx_kestats_lib {
 	}/*}}}*/
 
 	/**
-	 * debugMail 
+	 * debugMail
 	 *
 	 * Sends a html mail with debug information
-	 * 
-	 * @param string $email 
-	 * @param string $content 
-	 * @param string $subject 
+	 *
+	 * @param string $email
+	 * @param string $content
+	 * @param string $subject
 	 * @access public
 	 * @return void
 	 */
@@ -585,7 +585,7 @@ class tx_kestats_lib {
 
 		$header = "MIME-Version: 1.0\n";
 		$header .= "Content-type: text/html; charset=utf-8\n";
-		$header .= "From: ke_stats DEBUG\n"; 
+		$header .= "From: ke_stats DEBUG\n";
 
 		mail($email,$subject,$content,$header);
 	}/*}}}*/

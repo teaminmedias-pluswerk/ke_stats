@@ -1763,6 +1763,8 @@ table.ke-stats-table thead th {
 table.ke-stats-table tbody td,
 table.ke-stats-table tbody th {
 	padding: 4px 2px;
+    white-space: nowrap;
+    border-right: 1px solid #CCC;
 }
 
 table.ke-stats-table tbody tr.odd {

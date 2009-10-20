@@ -18,7 +18,7 @@ CREATE TABLE tx_kestats_statdata (
 	year int(11) DEFAULT '0' NOT NULL,
 	month int(11) DEFAULT '0' NOT NULL,
 	parent_uid int(11) DEFAULT '0' NOT NULL,
-	
+
 	PRIMARY KEY (uid),
 	KEY parent (pid),
 	KEY index1 (type(20),category(20),element_title(20),year,month),
@@ -37,9 +37,9 @@ CREATE TABLE tx_kestats_cache (
 	orderby text NOT NULL,
 	groupby text NOT NULL,
 	result longtext NOT NULL,
-	
+
 	PRIMARY KEY (uid),
-	KEY whereclause_index (whereclause (260), orderby (20), groupby (20))
+	KEY whereclause_index (whereclause(260),orderby(20),groupby(20))
 );
 
 #
@@ -50,6 +50,6 @@ CREATE TABLE tx_kestats_queue (
 	tstamp int(11) DEFAULT '0' NOT NULL,
 	data text NOT NULL,
 	generaldata text NOT NULL,
-	
+
 	PRIMARY KEY (uid)
 );

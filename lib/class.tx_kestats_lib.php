@@ -207,8 +207,8 @@ class tx_kestats_lib {
 
 			// some time information ...
 			$runningTime = round((t3lib_div::milliseconds() - $startTime) / 1000, 1);
-			$overviewPageData['info'] = '<p class="update_information">' . $GLOBALS['LANG']->getLL('last_update') . date(UPDATED_UNTIL_DATEFORMAT);
-			//$overviewPageData['info'] .= ' in ' . $runningTime . ' s.<p>';
+			// $overviewPageData['info'] = '<p class="update_information">' . $GLOBALS['LANG']->getLL('last_update') . date(UPDATED_UNTIL_DATEFORMAT);
+			// $overviewPageData['info'] .= ' in ' . $runningTime . ' s.<p>';
 			$overviewPageData['tstamp'] = time();
 		}
 		return $overviewPageData;

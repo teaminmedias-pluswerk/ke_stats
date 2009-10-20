@@ -273,11 +273,6 @@ class tx_kestats_pi1 extends tslib_pibase {
 					$this->increaseCounter(CATEGORY_IP_ADRESSES,'element_uid,element_title,year,month',$this->statData['remote_addr'],$element_uid);
 				}
 
-				// count also unknown user agents, for debugging purposes
-				if ($this->statData['user_agent_name'] == UNKNOWN_USER_AGENT) {
-					$this->increaseCounter(CATEGORY_UNKNOWN_USER_AGENTS,'element_uid,element_title,year,month',$this->statData['http_user_agent'],$element_uid);
-				}
-
 				// count referers
 				if (!empty($this->statData['http_referer'])) {
 					if ($this->statData['referer_is_search_engine']) {
@@ -296,9 +291,14 @@ class tx_kestats_pi1 extends tslib_pibase {
 				}
 			} else {
 				// count robots
-					if (!$this->extConf['ignoreRobots']) {
+				if (!$this->extConf['ignoreRobots']) {
 					$this->increaseCounter(CATEGORY_ROBOTS,'element_uid,element_title,year,month',$this->statData['user_agent_name'],$element_uid);
 				}
+			}
+
+			// count unknown user agents
+			if ($this->statData['user_agent_name'] == UNKNOWN_USER_AGENT) {
+				$this->increaseCounter(CATEGORY_UNKNOWN_USER_AGENTS,'element_uid,element_title,year,month',$this->statData['http_user_agent'],$element_uid);
 			}
 		}
 
@@ -545,6 +545,15 @@ class tx_kestats_pi1 extends tslib_pibase {
 					if (strstr($this->statData['http_user_agent'],$browserKey) && ($this->statData['user_agent_name'] == UNKNOWN_USER_AGENT)) $this->statData['user_agent_name'] = $browserName;
 				}
 			}
+		}
+
+		// CB 20.10.2009
+		// important bugfix: treat unknown user agents as robots
+		// otherwise all pageviews from unknown user agents are counted as pageviews from human visitors
+		// which is not true and gives false results. The number of false counts is identical to the number
+		// of entries titled "unknown" in the "browsers" table.
+		if ($this->statData['user_agent_name'] == UNKNOWN_USER_AGENT) {
+			$this->statData['is_robot'] = 1;
 		}
 
 		// get the referer data

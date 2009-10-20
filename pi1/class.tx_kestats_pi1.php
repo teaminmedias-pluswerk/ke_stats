@@ -655,15 +655,17 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 * @return void
 	 */
 	function debugMail($content='',$subject = 'TYPO3 Debug Mail') {/*{{{*/
-		if (is_array($content)) {
-			$content = t3lib_div::view_array($content);
+		if ($this->debug_email) {
+			if (is_array($content)) {
+				$content = t3lib_div::view_array($content);
+			}
+
+			$header = "MIME-Version: 1.0\n";
+			$header .= "Content-type: text/html; charset=utf-8\n";
+			$header .= "From: ke_stats DEBUG\n";
+
+			mail($this->debug_email,$subject,$content,$header);
 		}
-
-		$header = "MIME-Version: 1.0\n";
-		$header .= "Content-type: text/html; charset=utf-8\n";
-		$header .= "From: ke_stats DEBUG\n";
-
-		mail($this->debug_email,$subject,$content,$header);
 	}/*}}}*/
 }
 

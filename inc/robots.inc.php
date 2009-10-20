@@ -175,6 +175,7 @@ $GLOBALS['robots'] = array(/*{{{*/
 	'WebAlta Crawler/' => 'WebaAlta Crawler',
 	'Eurobot' => 'Eurobot/',
 	'Feedfetcher-Google' => 'Feedfetcher-Google; (+http://www.google.com/feedfetcher.html;',
-	'New is Free Robot' => '(http://www.newsisfree.com/robot.php)'
+	'New is Free Robot' => '(http://www.newsisfree.com/robot.php)',
+	'gsa-crawler' => 'Google Search Appliance (Enterprise)'
 );/*}}}*/
 ?>

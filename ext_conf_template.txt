@@ -12,3 +12,6 @@ asynchronousDataRefreshing = 0
 
 # cat=basic//130; type=boolean; label= Ignore Robots: On big sites, robots cause a lot of traffic resulting in a big statistics table. You may want not to include them in your statistics in order to reduce database size.
 ignoreRobots = 0
+
+# cat=basic//130; type=text; label= IP Fiter: Ignores requests from given IP addresses. Comma-list of IP-addresses to match with. *-wildcard allowed instead of number, plus leaving out parts in the IP number is accepted as wildcard (eg. 192.168.*.* equals 192.168)
+ipFilter =

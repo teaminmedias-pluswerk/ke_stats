@@ -1370,6 +1370,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 		$where_clause = 'type=\''.$statType.'\'';
 		$where_clause .= ' AND category=\''.$statCategory.'\'';
+			// ignore faulty entries
+		$where_clause .= ' AND year>0';
 		$where_clause .= $this->subpages_query;
 
 		// get first entry

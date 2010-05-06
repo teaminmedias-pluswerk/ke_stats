@@ -61,10 +61,7 @@ $GLOBALS['browsers'] = array(/*{{{*/
 	'Elinks' => 'Elinks',
 	'iCab' => 'iCab',
 	'Epiphany' => 'Epiphany',
-	'BlackBerry' => 'BlackBerry',
-	'Mozilla/5.0' => 'Mozilla 5 compatible',
-	'Mozilla/4.0' => 'Mozilla 4 compatible',
-	'Mozilla/3.0' => 'Mozilla 3 compatible',
+	'BlackBerry' => 'BlackBerry'
 );/*}}}*/
 
 ?>

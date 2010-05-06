@@ -57,7 +57,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 	var $debug_email = '';
 	var $debug_mail_if_unknown = 0;
 	var $debug_mail_queries = 0;
-	var $debug_timetracking = 1;
+	var $debug_timetracking = 0;
 	var $debug_queries = array();
 	var $timetracking = array();
 	var $timetracking_start = 0;
@@ -81,56 +81,73 @@ class tx_kestats_pi1 extends tslib_pibase {
 		$this->now = time();
 		$lcObj = t3lib_div::makeInstance('tslib_cObj');
 
-		// instantiate the shared library
+			// instantiate the shared library
 		$this->kestatslib = t3lib_div::makeInstance('tx_kestats_lib');
 
-		// ignore this page?
+			// ignore this page?
 		if ($this->conf['ignorePages'] && t3lib_div::inList($this->conf['ignorePages'],$GLOBALS['TSFE']->id)) {
 			return '';
 		}
 
-		// init timetracking
+			// init timetracking
 		if ($this->debug_timetracking) {
 			$this->timetracking_start = t3lib_div::milliseconds();
 		}
 
-		// ignore calls without user agent where the remote address is like the server address
-		// this is necessary to ignore certain types of calls, for example ajax calls to typo3 pages
+			// ignore calls without user agent where the remote address is like the server address
+			// this is necessary to ignore certain types of calls, for example ajax calls to typo3 pages
 		if ( trim(t3lib_div::getIndpEnv('HTTP_USER_AGENT')) == ''
 			&& isset($_SERVER['SERVER_ADDR'])
 			&& $_SERVER['SERVER_ADDR'] == t3lib_div::getIndpEnv('REMOTE_ADDR')) {
 			return '';
 		}
 
-		// get the data
+			// get the data
 		$this->getData();
 
-		// the data of the counted element (in this case, the current page)
+			// the data of the counted element (in this case, the current page)
 		$element_uid = $GLOBALS['TSFE']->id;
 		$element_pid = $GLOBALS['TSFE']->page['pid'];
 		$element_type = $GLOBALS['TSFE']->type;
 
-		// get "real" pagetitle (not touched by any extension)
-		// $element_title = $GLOBALS['TSFE']->page['title'];
+			// get "real" pagetitle (not touched by any extension)
+			// $element_title = $GLOBALS['TSFE']->page['title'];
 		$element_title = $GLOBALS['TSFE']->rootLine[sizeof($GLOBALS['TSFE']->rootLine)-1]['title'];
 		$element_language = t3lib_div::_GP('L') ? intval(t3lib_div::_GP('L')) : 0;
 
-		// get the extension-manager configuration
+			// get the extension-manager configuration
 		$this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['ke_stats']);
 		$this->extConf['enableIpLogging'] = $this->extConf['enableIpLogging'] ? 1 : 0;
 		$this->extConf['enableTracking'] = $this->extConf['enableTracking'] ? 1 : 0;
 		$this->extConf['ignoreBackendUsers'] = $this->extConf['ignoreBackendUsers'] ? 1 : 0;
 		$this->extConf['ignoreRobots'] = $this->extConf['ignoreRobots'] ? 1 : 0;
 		$this->extConf['ipFilter'] = $this->extConf['ipFilter'] ? $this->sanitizeData($this->extConf['ipFilter']) : '';
+		$this->extConf['logfileDir'] = $this->extConf['logfileDir'] ? $this->sanitizeData($this->extConf['logfileDir']) : '';
 
-		// do nothing if a backend user is logged in and ignoreBackendUsers is set
+			// init logfile dir
+		if ($this->extConf['logfileDir']) {
+			$this->extConf['logfileDir'] = trim($this->extConf['logfileDir'], '/');
+			if (!is_dir($this->extConf['logfileDir'])) {
+				$dir_created = t3lib_div::mkdir($this->extConf['logfileDir']);
+			} else {
+				$dir_exists = true;
+			}
+
+				// if logfileDir could not be created, don't write a logfile
+			if (!$dir_exists && !$dir_created) {
+				t3lib_div::devLog('Error while creating logfile dir: ' . $this->extConf['logfileDir'], $this->extKey, 1);
+				$this->extConf['logfileDir'] = '';
+			}
+		}
+
+			// do nothing if a backend user is logged in and ignoreBackendUsers is set
 		if ($this->extConf['ignoreBackendUsers'] && $GLOBALS['TSFE']->beUserLogin) {
 			$this->trackTime('end');
 			$this->logTimeTracking();
 			return '';
 		}
 
-		// do nothing if ipFilter is set and matches the remote ip address
+			// do nothing if ipFilter is set and matches the remote ip address
 		if ($this->extConf['ipFilter'] && t3lib_div::cmpIP($this->statData['remote_addr'], $this->extConf['ipFilter'])) {
 			//t3lib_div::devLog('ip filter matching',$this->extKey,0,array($this->statData['remote_addr'], $this->extConf['ipFilter']));
 			$this->trackTime('end');
@@ -138,22 +155,25 @@ class tx_kestats_pi1 extends tslib_pibase {
 			return '';
 		}
 
+			// write log
+		$this->writeLog($this->statData);
+
 		//***********************************************
 		// Count PAGE IMPRESSIONS
 		// (only from real visitors / humans)
 		//***********************************************
 
-		// Count this page impression taking into account if it is a human visitor or a robot.
+			// Count this page impression taking into account if it is a human visitor or a robot.
 		if ($this->conf['enableStatisticsPages']) {
 			if (!$this->statData['is_robot']) {
 				$this->increaseCounter(CATEGORY_PAGES,'element_uid,element_pid,element_language,element_type,year,month',$element_title,$element_uid,$element_pid,$element_language,$element_type);
 
-				// Count overall page impressions per time period
+					// Count overall page impressions per time period
 				$this->increaseCounter(CATEGORY_PAGES_OVERALL_DAY_OF_MONTH,'element_uid,element_title,year,month',sprintf('%02d',$this->statData['day']),$element_uid);
 				$this->increaseCounter(CATEGORY_PAGES_OVERALL_DAY_OF_WEEK,'element_uid,element_title,year,month',$this->statData['day_of_week'],$element_uid);
 				$this->increaseCounter(CATEGORY_PAGES_OVERALL_HOUR_OF_DAY,'element_uid,element_title,year,month',sprintf('%02d',$this->statData['hour']),$element_uid);
 
-				// Count this page impression for a logged-in fe-user.
+					// Count this page impression for a logged-in fe-user.
 				if (is_array($GLOBALS['TSFE']->fe_user->user)) {
 					$this->increaseCounter(CATEGORY_PAGES_FEUSERS,'element_uid,element_pid,element_language,element_type,year,month',$element_title,$element_uid,$element_pid,$element_language,$element_type);
 				}
@@ -166,12 +186,13 @@ class tx_kestats_pi1 extends tslib_pibase {
 
 		if ($this->conf['enableStatisticsPages']) {
 			if (!$this->statData['is_robot']) {
-				// Count this visitor (session), if it not has been counted before.
+
+					// Count this visitor (session), if it not has been counted before.
 				$sessionData = $GLOBALS['TSFE']->fe_user->getKey('ses',$this->prefixId);
 				if ($sessionData <> 'logged') {
 					$this->increaseCounter(CATEGORY_VISITS_OVERALL,'element_uid,year,month','',$element_uid);
 
-					// Count overall visits per time period
+						// Count overall visits per time period
 					$this->increaseCounter(CATEGORY_VISITS_OVERALL_DAY_OF_MONTH,'element_uid,element_title,year,month',sprintf('%02d',$this->statData['day']),$element_uid);
 					$this->increaseCounter(CATEGORY_VISITS_OVERALL_DAY_OF_WEEK,'element_uid,element_title,year,month',$this->statData['day_of_week'],$element_uid);
 					$this->increaseCounter(CATEGORY_VISITS_OVERALL_HOUR_OF_DAY,'element_uid,element_title,year,month',sprintf('%02d',$this->statData['hour']),$element_uid);
@@ -179,13 +200,13 @@ class tx_kestats_pi1 extends tslib_pibase {
 					$GLOBALS['TSFE']->fe_user->setKey('ses',$this->prefixId,'logged');
 				}
 
-				// Count the visit of a logged-in fe-user.
+					// Count the visit of a logged-in fe-user.
 				if (is_array($GLOBALS['TSFE']->fe_user->user)) {
 					$sessionData = $GLOBALS['TSFE']->fe_user->getKey('ses',$this->prefixId.'-fe_user');
 					if ($sessionData <> 'logged') {
 						$this->increaseCounter(CATEGORY_VISITS_OVERALL_FEUSERS,'element_uid,year,month','',$element_uid);
 
-						// Count overall visits of a logged-in user per time period
+							// Count overall visits of a logged-in user per time period
 						$this->increaseCounter(CATEGORY_VISITS_OVERALL_FEUSERS_DAY_OF_MONTH,'element_uid,element_title,year,month',sprintf('%02d',$this->statData['day']),$element_uid);
 						$this->increaseCounter(CATEGORY_VISITS_OVERALL_FEUSERS_DAY_OF_WEEK,'element_uid,element_title,year,month',$this->statData['day_of_week'],$element_uid);
 						$this->increaseCounter(CATEGORY_VISITS_OVERALL_FEUSERS_HOUR_OF_DAY,'element_uid,element_title,year,month',sprintf('%02d',$this->statData['hour']),$element_uid);
@@ -202,43 +223,45 @@ class tx_kestats_pi1 extends tslib_pibase {
 
 		if (!$this->statData['is_robot'] && $this->extConf['enableTracking']) {
 
-			// get the uid of the initial entry
+				// get the uid of the initial entry
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid',$this->tableName,'element_title=\''.$GLOBALS['TSFE']->fe_user->id.'\'');
 			$this->debug_queries[] = $GLOBALS['TYPO3_DB']->SELECTquery('uid',$this->tableName,'element_title=\''.$GLOBALS['TSFE']->fe_user->id.'\'');
 
 			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) == 0) {
-				// this is the first hit of this user
-				// so create the initial entry
+
+					// this is the first hit of this user
+					// so create the initial entry
 				$this->increaseCounter(CATEGORY_TRACKING_INITIAL,'element_uid,element_title,year,month',$GLOBALS['TSFE']->fe_user->id,$element_uid,0,$element_language,$element_type,STAT_TYPE_TRACKING);
 
-				// get the uid of the initial entry
-				// don't use sql_insert_id, because there may have been more insert operations in between
+					// get the uid of the initial entry
+					// don't use sql_insert_id, because there may have been more insert operations in between
 				$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid',$this->tableName,'element_title=\''.$GLOBALS['TSFE']->fe_user->id.'\'');
 				$this->debug_queries[] = $GLOBALS['TYPO3_DB']->SELECTquery('uid',$this->tableName,'element_title=\''.$GLOBALS['TSFE']->fe_user->id.'\'');
 				$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
 				$parent_uid = $row['uid'];
 
-				// track some more info about the visitor
-				// track browser
+					// track some more info about the visitor
+					// track browser
 				$this->increaseCounter(CATEGORY_TRACKING_BROWSER,'element_uid,element_title,year,month',$this->statData['user_agent_name'],$element_uid,0,0,0,STAT_TYPE_TRACKING,$parent_uid);
 
-				// track operating system
+					// track operating system
 				$this->increaseCounter(CATEGORY_TRACKING_OPERATING_SYSTEM,'element_uid,element_title,year,month',$this->statData['operating_system'],$element_uid,0,0,0,STAT_TYPE_TRACKING,$parent_uid);
 
-				// track ip addresse if ip-logging is enabled
+					// track ip addresse if ip-logging is enabled
 				if ($this->extConf['enableIpLogging']) {
 					$this->increaseCounter(CATEGORY_TRACKING_IP_ADRESS,'element_uid,element_title,year,month',$this->statData['remote_addr'],$element_uid,0,0,0,STAT_TYPE_TRACKING,$parent_uid);
 				}
 
-				// track referer and search string
+					// track referer and search string
 				if (!empty($this->statData['http_referer'])) {
 					if ($this->statData['referer_is_search_engine']) {
 						$this->increaseCounter(CATEGORY_TRACKING_REFERER,'element_uid,element_title,year,month',$this->statData['referer_name'],$element_uid,0,0,0,STAT_TYPE_TRACKING,$parent_uid);
-						// track search strings
+
+							// track search strings
 						$this->increaseCounter(CATEGORY_TRACKING_SEARCH_STRING,'element_uid,element_title,year,month',$this->getSearchwordFromReferer($this->statData['http_referer']),$element_uid,0,0,0,STAT_TYPE_TRACKING,$parent_uid);
 					} else {
-						// track only external sites
-						// TODO: make the list of hostnames, that won't be counted extendable via typoscript.
+							// track only external sites
+							// TODO: make the list of hostnames, that won't be counted extendable via typoscript.
 						$refererHost = $this->getHostnameWithoutWWW($this->statData['referer_name']);
 						$currentHost = $this->getHostnameWithoutWWW($this->statData['http_host']);
 						if ($refererHost <> $currentHost) {
@@ -249,20 +272,21 @@ class tx_kestats_pi1 extends tslib_pibase {
 			} else {
 				$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
 				$parent_uid = $row['uid'];
-				// update the time stamp of the initial entry in order to make this visitor appear at the top of the list
+
+					// update the time stamp of the initial entry in order to make this visitor appear at the top of the list
 				$res = $GLOBALS['TYPO3_DB']->exec_UPDATEquery($this->tableName,'uid = '.$parent_uid,array('tstamp' => $this->now));
 				$this->debug_queries[] = $GLOBALS['TYPO3_DB']->UPDATEquery($this->tableName,'uid = '.$parent_uid,array('tstamp' => $this->now));
 			}
 
-			// TRACK this visitor (page view)
+				// TRACK this visitor (page view)
 			$this->increaseCounter(CATEGORY_TRACKING_PAGES,'element_uid,element_pid,element_language,element_type,year,month',$element_title,$element_uid,$element_pid,$element_language,$element_type,STAT_TYPE_TRACKING,$parent_uid);
 
-			// delete older tracking entries
+				// delete older tracking entries
 			$where = 'type = \''.STAT_TYPE_TRACKING.'\' AND tstamp < '. ($this->now - $this->keepTrackingEntriesDays * 24 * 60 * 60);
 			$res = $GLOBALS['TYPO3_DB']->exec_DELETEquery($this->tableName,$where);
 			$this->debug_queries[] = $GLOBALS['TYPO3_DB']->DELETEquery($this->tableName,$where);
-			//debug('deleting tracking entries older than '.strftime('%d.%m.%y %R',($this->now - $this->keepTrackingEntriesDays * 24 * 60 * 60)));
-			//debug($GLOBALS['TYPO3_DB']->sql_affected_rows.' were affected by delete-query.');
+				//debug('deleting tracking entries older than '.strftime('%d.%m.%y %R',($this->now - $this->keepTrackingEntriesDays * 24 * 60 * 60)));
+				//debug($GLOBALS['TYPO3_DB']->sql_affected_rows.' were affected by delete-query.');
 		}
 
 		//***********************************************
@@ -271,26 +295,29 @@ class tx_kestats_pi1 extends tslib_pibase {
 
 		if ($this->conf['enableStatisticsPages']) {
 			if (!$this->statData['is_robot']) {
-				// count browsers
+
+					// count browsers
 				$this->increaseCounter(CATEGORY_BROWSERS,'element_uid,element_title,year,month',$this->statData['user_agent_name'],$element_uid);
 
-				// count operating systems
+					// count operating systems
 				$this->increaseCounter(CATEGORY_OPERATING_SYSTEMS,'element_uid,element_title,year,month',$this->statData['operating_system'],$element_uid);
 
-				// count ip addresse if ip-logging is enabled
+					// count ip addresse if ip-logging is enabled
 				if ($this->extConf['enableIpLogging']) {
 					$this->increaseCounter(CATEGORY_IP_ADRESSES,'element_uid,element_title,year,month',$this->statData['remote_addr'],$element_uid);
 				}
 
-				// count referers
+					// count referers
 				if (!empty($this->statData['http_referer'])) {
 					if ($this->statData['referer_is_search_engine']) {
 						$this->increaseCounter(CATEGORY_REFERERS_SEARCHENGINES,'element_uid,element_title,year,month',$this->statData['referer_name'],$element_uid);
-						// count search strings
+
+							// count search strings
 						$this->increaseCounter(CATEGORY_SEARCH_STRINGS,'element_uid,element_title,year,month',$this->getSearchwordFromReferer($this->statData['http_referer']),$element_uid);
 					} else {
-						// count only external sites
-						// TODO: make the list of hostnames, that won't be counted extendable via typoscript.
+
+							// count only external sites
+							// TODO: make the list of hostnames, that won't be counted extendable via typoscript.
 						$refererHost = $this->getHostnameWithoutWWW($this->statData['referer_name']);
 						$currentHost = $this->getHostnameWithoutWWW($this->statData['http_host']);
 						if ($refererHost <> $currentHost) {
@@ -299,13 +326,14 @@ class tx_kestats_pi1 extends tslib_pibase {
 					}
 				}
 			} else {
-				// count robots
+
+					// count robots
 				if (!$this->extConf['ignoreRobots']) {
 					$this->increaseCounter(CATEGORY_ROBOTS,'element_uid,element_title,year,month',$this->statData['user_agent_name'],$element_uid);
 				}
 			}
 
-			// count unknown user agents
+				// count unknown user agents
 			if ($this->statData['user_agent_name'] == UNKNOWN_USER_AGENT) {
 				$this->increaseCounter(CATEGORY_UNKNOWN_USER_AGENTS,'element_uid,element_title,year,month',$this->statData['http_user_agent'],$element_uid);
 			}
@@ -328,7 +356,8 @@ class tx_kestats_pi1 extends tslib_pibase {
 		 */
 
 		if (!$this->statData['is_robot'] && $this->conf['enableStatisticsExtensions']) {
-			// get the extension configurations
+
+				// get the extension configurations
 			$extConfList = array();
 			if (is_array($this->conf['registerExtension.'])) {
 				foreach ($this->conf['registerExtension.'] as $key => $value) {
@@ -341,7 +370,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 					}
 				}
 
-				// do the counting for each extension
+					// do the counting for each extension
 				foreach ($extConfList as $extKey => $extConf) {
 					// get the element uid
 					if (!empty($extConf['uidParameterWrap'])) {
@@ -351,11 +380,13 @@ class tx_kestats_pi1 extends tslib_pibase {
 						$element_uid = t3lib_div::_GET($extConf['uidParameter']);
 					}
 
-					// count this element if a single view uid is given
+						// count this element if a single view uid is given
 					if (!empty($element_uid)) {
-						// is there a TCA entry for this table?
+
+							// is there a TCA entry for this table?
 						if (is_array($GLOBALS['TCA'][$extConf['table']])) {
-							// the data of the counted element (in this case, the extension record)
+
+								// the data of the counted element (in this case, the extension record)
 							$where = 'uid='.$element_uid;
 							$where .= $lcObj->enableFields($extConf['table']);
 							$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*',$extConf['table'],$where);
@@ -524,48 +555,59 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 * @return 0
 	 */
 	function getData() {/*{{{*/
-		// get the environment data
+			// get the environment data
 		$this->statData['http_host'] = $this->sanitizeData(t3lib_div::getIndpEnv('HTTP_HOST'));
 		$this->statData['http_referer'] = $this->sanitizeData(t3lib_div::getIndpEnv('HTTP_REFERER'));
 		$this->statData['http_user_agent'] = $this->sanitizeData(trim(t3lib_div::getIndpEnv('HTTP_USER_AGENT')));
 		$this->statData['remote_addr'] = $this->sanitizeData(t3lib_div::getIndpEnv('REMOTE_ADDR'));
 		$this->statData['request_uri'] = $this->sanitizeData(t3lib_div::getIndpEnv('REQUEST_URI'));
 
-		// collect the time information
+			// collect the time information
 		$this->getTimeData();
 
-		// check, if the visitor is a robot
-		// and get the short name of the robot or of the browser
+			// check, if the visitor is a robot
+			// and get the short name of the robot or of the browser
 		$this->statData['is_robot'] = 0;
 		$this->statData['user_agent_name'] = UNKNOWN_USER_AGENT;
+
+			// treat empty user agents as robots
 		if (empty($this->statData['http_user_agent'])) {
 			$this->statData['http_user_agent'] = EMPTY_USER_AGENT;
-			// treat empty user agents as robots
 			$this->statData['is_robot'] = 1;
 		} else {
+
+				// check if the http_user_agent string is in the list of robots
 			foreach ($this->robots as $robotKey => $robotName) {
 				if (strstr($this->statData['http_user_agent'],$robotKey)) {
 					$this->statData['is_robot'] = 1;
-					if ($this->statData['user_agent_name'] == UNKNOWN_USER_AGENT) $this->statData['user_agent_name'] = $robotName;
+					if ($this->statData['user_agent_name'] == UNKNOWN_USER_AGENT) {
+						$this->statData['user_agent_name'] = $robotName;
+					}
 				}
 			}
+
+				// if the http_user_agent has not been identified as a robot,
+				// check if it is in the list of browsers
 			if (!$this->statData['is_robot']) {
 				foreach ($this->browsers as $browserKey => $browserName) {
-					if (strstr($this->statData['http_user_agent'],$browserKey) && ($this->statData['user_agent_name'] == UNKNOWN_USER_AGENT)) $this->statData['user_agent_name'] = $browserName;
+					if (strstr($this->statData['http_user_agent'],$browserKey)
+							&& ($this->statData['user_agent_name'] == UNKNOWN_USER_AGENT)) {
+						$this->statData['user_agent_name'] = $browserName;
+					}
 				}
 			}
 		}
 
-		// CB 20.10.2009
-		// important bugfix: treat unknown user agents as robots
-		// otherwise all pageviews from unknown user agents are counted as pageviews from human visitors
-		// which is not true and gives false results. The number of false counts is identical to the number
-		// of entries titled "unknown" in the "browsers" table.
+			// CB 20.10.2009
+			// important bugfix: treat unknown user agents as robots
+			// otherwise all pageviews from unknown user agents are counted as pageviews from human visitors
+			// which is not true and gives false results. The number of false counts is identical to the number
+			// of entries titled "unknown" in the "browsers" table.
 		if ($this->statData['user_agent_name'] == UNKNOWN_USER_AGENT) {
 			$this->statData['is_robot'] = 1;
 		}
 
-		// get the referer data
+			// get the referer data
 		$refererName = $statline['http_referer'];
 		if ($this->statData['http_user_agent'] == "") {
 			$this->statData['referer_name'] = 'direct';
@@ -576,7 +618,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 		$maxStrLen = $this->conf['maxRefererNameLength'] ? intval($this->conf['maxRefererNameLength']) : 50;
 		if (strlen($this->statData['referer_name']) > $maxStrLen) $this->statData['referer_name'] = substr($this->statData['referer_name'], 0, $maxStrLen).'...';
 
-		// is the referer a search engine or a normal website?
+			// is the referer a search engine or a normal website?
 		$this->statData['referer_is_search_engine'] = 0;
 		foreach ($this->search_engines as $search_engine_key => $search_engine_name) {
 			if (strstr($this->statData['referer_name'],$search_engine_key)) {
@@ -584,7 +626,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 			}
 		}
 
-		// get the operating system
+			// get the operating system
 		$this->statData['operating_system'] = UNKNOWN_OPERATING_SYSTEM;
 		foreach ($this->operating_systems as $operating_system_key => $operating_system_name) {
 			if (strstr($this->statData['http_user_agent'],$operating_system_key) && ($this->statData['operating_system'] == UNKNOWN_OPERATING_SYSTEM)) {
@@ -592,11 +634,11 @@ class tx_kestats_pi1 extends tslib_pibase {
 			}
 		}
 
-		// DEBUG
-		// mail debugging information
-		// send mail if operating system is unknown
+			// DEBUG
+			// mail debugging information
 		if (!$this->statData['is_robot']) {
 
+				// send mail if operating system is unknown
 			if ($this->statData['operating_system'] == UNKNOWN_OPERATING_SYSTEM
 				&& $this->statData['http_user_agent'] != EMPTY_USER_AGENT
 				&& $this->debug_mail_if_unknown
@@ -604,7 +646,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 				$this->debugMail($this->statData,'[ke_stats] Unknown Operating System');
 			}
 
-			// send mail if user agent is unknown
+				// send mail if user agent is unknown
 			if ($this->debug_mail_if_unknown
 				&& $this->statData['user_agent_name'] == UNKNOWN_USER_AGENT
 				&& $this->statData['http_user_agent'] != EMPTY_USER_AGENT
@@ -676,6 +718,47 @@ class tx_kestats_pi1 extends tslib_pibase {
 			mail($this->debug_email,$subject,$content,$header);
 		}
 	}/*}}}*/
+
+	/**
+ 	* Logs data to the logfileDir (set in extension manager)
+ 	*
+ 	* @param   array $logData data to be logged
+ 	* @author  Christian Buelter <buelter@kennziffer.com>
+ 	* @since   Tue May 04 2010 14:26:11 GMT+0200
+ 	*/
+	protected function writeLog($logData) {
+		if ($this->extConf['logfileDir']) {
+			$filename = $this->extKey . '-' . date('m-d-Y') . '.csv';
+			file_put_contents($this->extConf['logfileDir'] . '/' . $filename,
+				$this->arrayToLogString($logData, array(), 200) . "\n",
+				FILE_APPEND);
+		}
+	}
+
+	/**
+	 * Converts a one dimensional array to a one line string which can be used for logging or debugging output
+	 * Example: "loginType: FE; refInfo: Array; HTTP_HOST: www.example.org; REMOTE_ADDR: 192.168.1.5; REMOTE_HOST:; security_level:; showHiddenRecords: 0;"
+	 *
+	 * taken from t3lib_div, but with double quotes around each value for better import into an spreadsheet program
+	 *
+	 * @param	array		Data array which should be outputted
+	 * @param	mixed		List of keys which should be listed in the output string. Pass a comma list or an array. An empty list outputs the whole array.
+	 * @param	integer		Long string values are shortened to this length. Default: 20
+	 * @return	string		Output string with key names and their value as string
+	 */
+	public static function arrayToLogString(array $arr, $valueList=array(), $valueLength=20, $wrapChar='"') {
+		$str = '';
+		if (!is_array($valueList))	{
+			$valueList = self::trimExplode(',', $valueList, 1);
+		}
+		$valListCnt = count($valueList);
+		foreach ($arr as $key => $value)	{
+			if (!$valListCnt || in_array($key, $valueList))	{
+				$str .= $wrapChar . (string)$key.trim(': '.t3lib_div::fixed_lgd_cs(str_replace("\n",'|',(string)$value), $valueLength)) . $wrapChar . ';';
+			}
+		}
+		return $str;
+	}
 }
 
 

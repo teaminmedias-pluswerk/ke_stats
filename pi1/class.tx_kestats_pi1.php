@@ -364,7 +364,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 					if (!is_array($value)) {
 						$extConfList[$key] = array();
 						$extConfList[$key]['name'] = $value;
-						foreach ($this->conf['registerExtension.'][$key.'.'] as $confKey => $confValue) {
+						foreach ($this->conf['registerExtension.'][$key . '.'] as $confKey => $confValue) {
 							$extConfList[$key][$confKey] = $confValue;
 						}
 					}

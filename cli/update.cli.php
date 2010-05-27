@@ -23,30 +23,30 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
-// time in milliseconds this script should stop after
+	// time in milliseconds this script should stop after
 define(MAX_EXECUTION_TIME, 90000);
 
-// Defining circumstances for CLI mode:
+	// Defining circumstances for CLI mode:
 define('TYPO3_cliMode', TRUE);
 
-// Defining PATH_thisScript here: Must be the ABSOLUTE path of this script in
-// the right context: This will work as long as the script is called by it's
-// absolute path!
+	// Defining PATH_thisScript here: Must be the ABSOLUTE path of this script in
+	// the right context: This will work as long as the script is called by it's
+	// absolute path!
 define('PATH_thisScript',$_ENV['_']?$_ENV['_']:$_SERVER['_']);
 
-// Include configuration file:
+	// Include configuration file:
 require(dirname(PATH_thisScript).'/conf.php');
 
-// Include init file:
+	// Include init file:
 require(dirname(PATH_thisScript).'/'.$BACK_PATH.'init.php');
 
-// find the extension directory
+	// find the extension directory
 $EXT_DIR = dirname(dirname(PATH_thisScript));
 
-// include the shared library
+	// include the shared library
 require_once($EXT_DIR.'/lib/class.tx_kestats_lib.php');
 
-// instantiate the shared library
+	// instantiate the shared library
 $kestatslib = t3lib_div::makeInstance('tx_kestats_lib');
 
 $startTime = t3lib_div::milliseconds();
@@ -56,15 +56,15 @@ $counter_invalid = 0;
 
 do {
 
-	// get oldest entry
+		// get oldest entry
 	$oldestEntry = $kestatslib->getOldestQueueEntry();
 
-	// process it and delete it
+		// process it and delete it
 	if ($oldestEntry) {
 		$dataArray = unserialize($oldestEntry['data']);
 		$kestatslib->statData = unserialize($oldestEntry['generaldata']);
 
-		// make sure we only process valid data
+			// make sure we only process valid data
 		if ($dataArray['category'] && $dataArray['stat_type']) {
 			$kestatslib->updateStatisticsTable(
 					$dataArray['category'],
@@ -75,7 +75,8 @@ do {
 					$dataArray['element_language'],
 					$dataArray['element_type'],
 					$dataArray['stat_type'],
-					$dataArray['parent_uid']);
+					$dataArray['parent_uid'],
+					$dataArray['additionalData']);
 			$counter++;
 		} else {
 			$counter_invalid++;
@@ -93,5 +94,5 @@ $output .=  'Ignored ' . $counter_invalid . ' invalid entries.' . "\n";
 
 // DEBUG
 // echo $output;
-// mail('admin@mysite.com','ke_stats CLI',$output);
+// mail('admin@mysite.com', 'ke_stats CLI', $output);
 ?>

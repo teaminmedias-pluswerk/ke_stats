@@ -64,14 +64,36 @@ class tx_kestats_lib {
 	 * @param int $element_type
 	 * @param string $stat_type
 	 * @param int $parent_uid
+	 * @param string $additionalData Additional data, must be processed by a custom hook.
 	 * @access public
 	 * @return void
 	 */
-	function increaseCounter($category, $compareFieldList, $element_title='', $element_uid=0, $element_pid=0, $element_language=0, $element_type=0, $stat_type=STAT_TYPE_PAGES, $parent_uid=0) {/*{{{*/
+	function increaseCounter($category, $compareFieldList, $element_title='', $element_uid=0, $element_pid=0, $element_language=0, $element_type=0, $stat_type=STAT_TYPE_PAGES, $parent_uid=0, $additionalData='') {/*{{{*/
 
-		// if asynchronous data refreshing is activated, store the the data
-		// which should be counted at this point into a queue table. If not,
-		// process the data (update the counter).
+			// Hook for individual modifications of the statistical data
+			// before submitting it to the queue or updatign it directly
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyStatDataBeforeQueue'])) {
+			foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyStatDataBeforeQueue'] as $_classRef) {
+				$_procObj = & t3lib_div::getUserObj($_classRef);
+				$_procObj->modifyStatDataBeforeQueue(
+					&$category,
+					&$compareFieldList,
+					&$element_title,
+					&$element_uid,
+					&$element_pid,
+					&$element_language,
+					&$element_type,
+					&$stat_type,
+					&$parent_uid,
+					&$additionalData,
+					$this
+				);
+			}
+		}
+
+			// if asynchronous data refreshing is activated, store the the data
+			// which should be counted at this point into a queue table. If not,
+			// process the data (update the counter).
 		if (!$this->extConf['asynchronousDataRefreshing']) {
 
 			$this->updateStatisticsTable(
@@ -83,10 +105,12 @@ class tx_kestats_lib {
 				$element_language,
 				$element_type,
 				$stat_type,
-				$parent_uid);
+				$parent_uid,
+				$additionalData);
 
 		} else {
 
+				// compile data for the queue
 			$dataArray = array(
 					'category' => $category,
 					'compareFieldList' => $compareFieldList,
@@ -96,10 +120,19 @@ class tx_kestats_lib {
 					'element_language' => $element_language,
 					'element_type' => $element_type,
 					'stat_type' => $stat_type,
-					'parent_uid' => $parent_uid
+					'parent_uid' => $parent_uid,
+					'additionalData' => $additionalData
 					);
 
-			$res = $GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_kestats_queue',array('tstamp' => $this->now, 'data' => serialize($dataArray), 'generaldata' => serialize($this->statData)));
+				// insert into queue
+			$res = $GLOBALS['TYPO3_DB']->exec_INSERTquery(
+				'tx_kestats_queue',
+				array(
+					'tstamp' => $this->now,
+					'data' => serialize($dataArray),
+					'generaldata' => serialize($this->statData)
+				)
+			);
 
 		}
 	}/*}}}*/
@@ -297,10 +330,7 @@ class tx_kestats_lib {
 						if (count($rows)) {
 							$result = t3lib_div::array2xml($rows);
 
-							// DEBUG
-							// cache entries may get quite big ...
-							// print_r($result);
-							// echo round(strlen($result) / 1024) . ' KB';
+								// cache entries may get quite big ...
 							$GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_kestats_cache',array(
 										'whereclause' => $where_clause,
 										'groupby' => $groupBy,
@@ -375,8 +405,6 @@ class tx_kestats_lib {
 			}
 		}
 
-		// DEBUG
-		// debug($resultArray);
 		return $resultArray;
 	}/*}}}*/
 
@@ -462,15 +490,40 @@ class tx_kestats_lib {
 	 * Increases a statistics counter.
 	 * If no counter exists that matches all fields the $compareFieldList, a new one is created.
 	 *
-	 * @param string $data
+	 * @param mixed $category
+	 * @param mixed $compareFieldList
+	 * @param int $element_uid
+	 * @param int $element_pid
+	 * @param string $element_title
+	 * @param int $element_language
+	 * @param int $element_type
+	 * @param string $stat_type
+	 * @param int $parent_uid
+	 * @param string $additionalData Additional data, must be processed by a custom hook.
 	 * @access public
 	 * @return void
 	 */
-	function updateStatisticsTable($category,$compareFieldList,$element_title='',$element_uid=0,$element_pid=0,$element_language=0,$element_type=0,$stat_type=STAT_TYPE_PAGES,$parent_uid=0) {/*{{{*/
-		$statEntry = $this->getStatEntry($category,$compareFieldList,$element_uid,$element_pid,$element_title,$element_language,$element_type,$stat_type,$parent_uid);
-		// create a new entry if the data is unique, or this entry referers to another (user tracking)
+	function updateStatisticsTable($category, $compareFieldList, $element_title='', $element_uid=0, $element_pid=0, $element_language=0, $element_type=0, $stat_type=STAT_TYPE_PAGES, $parent_uid=0, $additionalData='') {/*{{{*/
+
+			// check if there is already an entry for this combination of
+			// statistical data. Takes compareFieldList into account
+		$statEntry = $this->getStatEntry(
+			$category,
+			$compareFieldList,
+			$element_uid,
+			$element_pid,
+			$element_title,
+			$element_language,
+			$element_type,
+			$stat_type,
+			$parent_uid,
+			$additionalData
+		);
+
+			// create a new entry if the data is unique, or this entry referers to another (user tracking)
 		if (count($statEntry) == 0 || $parent_uid > 0) {
-			// generate new counter
+
+				// generate new counter
 			$insertFields = array();
 			$insertFields['type'] = $stat_type;
 			$insertFields['category'] = $category;
@@ -483,24 +536,37 @@ class tx_kestats_lib {
 			$insertFields['tstamp'] = $this->now;
 			$insertFields['crdate'] = $this->now;
 			$insertFields['counter'] = 1;
-			// Set only the time fields which are necessary for this category (those which are in the $compareFieldList)
+
+				// Set only the time fields which are necessary for this
+				// category (those which are in the $compareFieldList)
 			foreach (explode(',',$this->timeFields ) as $field) {
 				if (in_array($field,explode(',',$compareFieldList))) {
 					$insertFields[$field] = $this->statData[$field];
 				} else {
 					$insertFields[$field] = -1;
 				}
-
 			}
+
+				// Hook for individual modifications of the statistical data
+				// before creating a new counter (e.g. processing the additional data)
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyStatDataBeforeNewCounter'])) {
+				foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyStatDataBeforeNewCounter'] as $_classRef) {
+					$_procObj = & t3lib_div::getUserObj($_classRef);
+					$insertFields = $_procObj->modifyStatDataBeforeNewCounter($insertFields, $additionalData, $this);
+				}
+			}
+
 			$res = $GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_kestats_statdata', $insertFields);
 			unset($insertFields);
+
 		} else {
-			// increase existing counter
+
+				// increase existing counter
 			$updateFields = array();
 			$updateFields['counter'] = $statEntry['counter'] + 1;
 			$updateFields['tstamp'] = $this->now;
-			$where_clause = 'uid = '.$statEntry['uid'];
-			$res = $GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_kestats_statdata',$where_clause,$updateFields);
+			$where_clause = 'uid = ' . $statEntry['uid'];
+			$res = $GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_kestats_statdata', $where_clause, $updateFields);
 			unset($updateFields);
 		}
 	}/*}}}*/
@@ -516,9 +582,20 @@ class tx_kestats_lib {
 	 * @param string $element_title
 	 * @param int $element_language
 	 * @param int $element_type
+	 * @param string $stat_type
+	 * @param string $additionalData Additional data, must be processed by a custom hook.
 	 * @return void
 	 */
-	function getStatEntry($category,$compareFieldList,$element_uid=0,$element_pid=0,$element_title='',$element_language=0,$element_type=0,$stat_type=STAT_TYPE_PAGES) {/*{{{*/
+	function getStatEntry($category,
+						  $compareFieldList,
+						  $element_uid,
+						  $element_pid,
+						  $element_title,
+						  $element_language,
+						  $element_type,
+						  $stat_type,
+						  $parent_uid,
+						  $additionalData) {/*{{{*/
 		$statEntry = array();
 		$compareData = $this->statData;
 		$compareData['element_uid'] = $element_uid;
@@ -527,22 +604,38 @@ class tx_kestats_lib {
 		$compareData['element_language'] = $element_language;
 		$compareData['element_type'] = $element_type;
 
-		$where_clause = ' type=\''.$stat_type.'\'';
-		$where_clause .= ' AND category=\''.$category.'\'';
+		$where_clause = ' type=\'' . $stat_type . '\'';
+		$where_clause .= ' AND category=\'' . $category . '\'';
+
+			// Hook for individual modifications of the data
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyGetStatEntryWhereClause'])) {
+			foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyGetStatEntryWhereClause'] as $_classRef) {
+				$_procObj = & t3lib_div::getUserObj($_classRef);
+				$_procObj->modifyGetStatEntryWhereClause(
+					&$compareFieldList,
+					&$parent_uid,
+					&$additionalData,
+					&$where_clause,
+					&$compareData,
+					$this
+				);
+			}
+		}
+
+			// loop through the fields defined in compareFieldList
 		foreach (explode(',',$compareFieldList) as $field) {
 			// is the field a string field, or an integer?
 			if (in_array($field,array('element_title','type'))) {
-				// string field
-				$where_clause .= ' AND '.$field.'=\''.$compareData[$field].'\'';
+					// string field
+				$where_clause .= ' AND ' . $field . '=\'' . $compareData[$field] . '\'';
 			} else {
-				// integer field
-				$where_clause .= ' AND '.$field.'='.$compareData[$field];
+					// integer field
+				$where_clause .= ' AND ' . $field . '=' . $compareData[$field];
 			}
-
 		}
-		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid,counter','tx_kestats_statdata',$where_clause);
+		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid,counter', 'tx_kestats_statdata', $where_clause);
 
-		// any results?
+			// any results?
 		if ($GLOBALS['TYPO3_DB']->sql_num_rows($res)) {
 			$statEntry = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
 		}

@@ -33,6 +33,7 @@
 // strings at the beginning
 
 $GLOBALS['operating_systems'] = array(/*{{{*/
+	'Windows NT 6.1' => 'Windows 7',
 	'Windows NT 6.0' => 'Windows Vista',
 	'Windows NT 5.2' => 'Windows Server 2003; Windows XP x64 Edition',
 	'Windows NT 5.1' => 'Windows XP',
@@ -56,8 +57,6 @@ $GLOBALS['operating_systems'] = array(/*{{{*/
 	'PLAYSTATION 3' => 'PLAYSTATION 3',
 	'PlayStation Portable' => 'PlayStation Portable',
 	'BlackBerry' => 'BlackBerry',
-	'Mozilla/3.0 (compatible)' => 'Mozilla/3.0 (compatible)',
-	'Mozilla/3.1 (compatible)' => 'Mozilla/3.1 (compatible)'
 );/*}}}*/
 
 ?>

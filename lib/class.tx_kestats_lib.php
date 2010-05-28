@@ -70,7 +70,7 @@ class tx_kestats_lib {
 	 */
 	function increaseCounter($category, $compareFieldList, $element_title='', $element_uid=0, $element_pid=0, $element_language=0, $element_type=0, $stat_type=STAT_TYPE_PAGES, $parent_uid=0, $additionalData='') {/*{{{*/
 
-			// Hook for individual modifications of the statistical data
+			// hook for individual modifications of the statistical data
 			// before submitting it to the queue or updatign it directly
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyStatDataBeforeQueue'])) {
 			foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyStatDataBeforeQueue'] as $_classRef) {
@@ -301,6 +301,14 @@ class tx_kestats_lib {
 					$subpages_query = '';
 				}
 				$where_clause .= $subpages_query;
+
+					// hook for custom db query
+				if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['getStatResultsDBQuery'])) {
+					foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['getStatResultsDBQuery'] as $_classRef) {
+						$_procObj = & t3lib_div::getUserObj($_classRef);
+						$where_clause = $_procObj->getStatResultsDBQuery($where_clause, $this);
+					}
+				}
 
 				if ($useCache) {
 					// is there a cache entry?
@@ -547,7 +555,7 @@ class tx_kestats_lib {
 				}
 			}
 
-				// Hook for individual modifications of the statistical data
+				// hook for individual modifications of the statistical data
 				// before creating a new counter (e.g. processing the additional data)
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyStatDataBeforeNewCounter'])) {
 				foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyStatDataBeforeNewCounter'] as $_classRef) {
@@ -607,7 +615,7 @@ class tx_kestats_lib {
 		$where_clause = ' type=\'' . $stat_type . '\'';
 		$where_clause .= ' AND category=\'' . $category . '\'';
 
-			// Hook for individual modifications of the data
+			// hook for individual modifications of the data
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyGetStatEntryWhereClause'])) {
 			foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyGetStatEntryWhereClause'] as $_classRef) {
 				$_procObj = & t3lib_div::getUserObj($_classRef);

@@ -29,10 +29,18 @@ define(MAX_EXECUTION_TIME, 90000);
 	// Defining circumstances for CLI mode:
 define('TYPO3_cliMode', TRUE);
 
-	// Defining PATH_thisScript here: Must be the ABSOLUTE path of this script in
-	// the right context: This will work as long as the script is called by it's
-	// absolute path!
-define('PATH_thisScript',$_ENV['_']?$_ENV['_']:$_SERVER['_']);
+	// Defining PATH_thisScript here: Must be the ABSOLUTE path of this script.
+if (!empty($_ENV['_']) || !empty($_SERVER['_'])) {
+		// script is called from the shell
+		// This will work as long as the script is called by it's
+		// absolute path from the shell!
+	define('PATH_thisScript', $_ENV['_'] ? $_ENV['_'] : $_SERVER['_']);
+} else if (!empty($_ENV['SCRIPT_FILENAME']) || !empty($_SERVER['SCRIPT_FILENAME'])) {
+		// script is called via browser
+	define('PATH_thisScript', $_ENV['SCRIPT_FILENAME'] ? $_ENV['SCRIPT_FILENAME'] : $_SERVER['SCRIPT_FILENAME']);
+} else {
+	die ('Error: Could not determine absolute path to current script.');
+}
 
 	// Include configuration file:
 require(dirname(PATH_thisScript).'/conf.php');

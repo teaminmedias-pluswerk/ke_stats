@@ -46,7 +46,8 @@ $GLOBALS['search_engines'] = array(/*{{{*/
 	'search.conduit.com' => 'Conduit.com',
 	'suche.web.de' => 'Web.de',
 	'search.icq.com' => 'Icq.com',
-	'search.sweetim.com' => 'Sweetim.com'
+	'search.sweetim.com' => 'Sweetim.com',
+	'search.ch' => 'Search.ch'
 );/*}}}*/
 
 ?>

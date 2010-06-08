@@ -76,16 +76,16 @@ class tx_kestats_lib {
 			foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyStatDataBeforeQueue'] as $_classRef) {
 				$_procObj = & t3lib_div::getUserObj($_classRef);
 				$_procObj->modifyStatDataBeforeQueue(
-					&$category,
-					&$compareFieldList,
-					&$element_title,
-					&$element_uid,
-					&$element_pid,
-					&$element_language,
-					&$element_type,
-					&$stat_type,
-					&$parent_uid,
-					&$additionalData,
+					$category,
+					$compareFieldList,
+					$element_title,
+					$element_uid,
+					$element_pid,
+					$element_language,
+					$element_type,
+					$stat_type,
+					$parent_uid,
+					$additionalData,
 					$this
 				);
 			}
@@ -620,11 +620,11 @@ class tx_kestats_lib {
 			foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyGetStatEntryWhereClause'] as $_classRef) {
 				$_procObj = & t3lib_div::getUserObj($_classRef);
 				$_procObj->modifyGetStatEntryWhereClause(
-					&$compareFieldList,
-					&$parent_uid,
-					&$additionalData,
-					&$where_clause,
-					&$compareData,
+					$compareFieldList,
+					$parent_uid,
+					$additionalData,
+					$where_clause,
+					$compareData,
 					$this
 				);
 			}

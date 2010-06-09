@@ -199,7 +199,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['backendModuleInit'])) {
 				foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['backendModuleInit'] as $_classRef) {
 					$_procObj = & t3lib_div::getUserObj($_classRef);
-					$_procObj->backendModuleInit(&$this);
+					$_procObj->backendModuleInit($this);
 				}
 			}
 

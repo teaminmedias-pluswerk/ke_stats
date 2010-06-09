@@ -1,9 +1,9 @@
 <?php
 
 ########################################################################
-# Extension Manager/Repository config file for ext: "ke_stats"
+# Extension Manager/Repository config file for ext: "ke_smallads"
 #
-# Auto generated 08-06-2010 17:59
+# Auto generated 09-06-2010 11:28
 #
 # Manual updates:
 # Only the data in the array - anything else is removed by next write.
@@ -11,25 +11,25 @@
 ########################################################################
 
 $EM_CONF[$_EXTKEY] = array(
-	'title' => 'Statistics',
-	'description' => 'Statistics for TYPO3: pageviews/visits, live visitor tracking and extension statistics. Supports fe_users, languages and page types. Support for tt_news and commerce is built in. Easy to adapt to other extensions.',
-	'category' => 'module',
+	'title' => 'Smallads',
+	'description' => 'Submit, display and admin smallads (Classified advertisements, Announcements). FE Users can edit and delete ads they have submitted. Picture upload is possible. Easy to install.',
+	'category' => 'plugin',
 	'shy' => 0,
-	'version' => '0.5.1',
+	'version' => '1.1.2',
 	'dependencies' => '',
 	'conflicts' => '',
 	'priority' => '',
 	'loadOrder' => '',
 	'module' => 'mod1',
-	'state' => 'beta',
-	'uploadfolder' => 0,
+	'state' => 'stable',
+	'uploadfolder' => 1,
 	'createDirs' => '',
 	'modify_tables' => '',
 	'clearcacheonload' => 0,
 	'lockType' => '',
 	'author' => 'Christian Buelter (kennziffer.com)',
 	'author_email' => 'buelter@kennziffer.com',
-	'author_company' => '',
+	'author_company' => 'www.kennziffer.com GmbH',
 	'CGLcompliance' => '',
 	'CGLcompliance_note' => '',
 	'constraints' => array(
@@ -40,7 +40,7 @@ $EM_CONF[$_EXTKEY] = array(
 		'suggests' => array(
 		),
 	),
-	'_md5_values_when_last_written' => 'a:37:{s:9:"ChangeLog";s:4:"6623";s:10:"README.txt";s:4:"c135";s:21:"ext_conf_template.txt";s:4:"db0a";s:12:"ext_icon.gif";s:4:"3261";s:17:"ext_localconf.php";s:4:"7475";s:14:"ext_tables.php";s:4:"cad8";s:14:"ext_tables.sql";s:4:"9420";s:24:"ext_typoscript_setup.txt";s:4:"0df6";s:28:"icon_tx_kestats_statdata.gif";s:4:"475a";s:16:"locallang_db.xml";s:4:"9570";s:7:"tca.php";s:4:"89db";s:16:"userTSconfig.txt";s:4:"8cf0";s:26:"mod1/backendmenu.class.php";s:4:"7160";s:14:"mod1/clear.gif";s:4:"cc11";s:13:"mod1/conf.php";s:4:"955c";s:14:"mod1/index.php";s:4:"e16f";s:18:"mod1/locallang.xml";s:4:"6bff";s:22:"mod1/locallang_mod.xml";s:4:"bfa9";s:19:"mod1/moduleicon.gif";s:4:"3261";s:28:"lib/class.tx_kestats_lib.php";s:4:"d232";s:26:"flotr/flotr-0.2.0-alpha.js";s:4:"f6a2";s:19:"flotr/lib/base64.js";s:4:"dc32";s:25:"flotr/lib/canvas2image.js";s:4:"ba51";s:23:"flotr/lib/canvastext.js";s:4:"9a59";s:21:"flotr/lib/excanvas.js";s:4:"fe7d";s:30:"flotr/lib/prototype-1.6.0.2.js";s:4:"85ef";s:14:"doc/manual.sxw";s:4:"0d50";s:19:"doc/wizard_form.dat";s:4:"fe60";s:20:"doc/wizard_form.html";s:4:"5120";s:20:"inc/browsers.inc.php";s:4:"9f16";s:21:"inc/constants.inc.php";s:4:"d953";s:29:"inc/operating_systems.inc.php";s:4:"67ac";s:18:"inc/robots.inc.php";s:4:"9aa5";s:26:"inc/search_engines.inc.php";s:4:"f7b9";s:12:"cli/conf.php";s:4:"9d24";s:18:"cli/update.cli.php";s:4:"f6fb";s:28:"pi1/class.tx_kestats_pi1.php";s:4:"8033";}',
+	'_md5_values_when_last_written' => 'a:31:{s:9:"ChangeLog";s:4:"3008";s:10:"README.txt";s:4:"f248";s:12:"ext_icon.gif";s:4:"d83b";s:17:"ext_localconf.php";s:4:"3e2b";s:14:"ext_tables.php";s:4:"c8b2";s:14:"ext_tables.sql";s:4:"bf33";s:15:"flexform_ds.xml";s:4:"1620";s:31:"icon_tx_kesmallads_smallads.gif";s:4:"6dab";s:34:"icon_tx_kesmallads_smallads__f.gif";s:4:"64cd";s:35:"icon_tx_kesmallads_smallads__ft.gif";s:4:"36a0";s:34:"icon_tx_kesmallads_smallads__h.gif";s:4:"9495";s:34:"icon_tx_kesmallads_smallads__t.gif";s:4:"c469";s:34:"icon_tx_kesmallads_smallads__x.gif";s:4:"36a0";s:16:"locallang_db.php";s:4:"b966";s:7:"tca.php";s:4:"f82e";s:14:"mod1/clear.gif";s:4:"cc11";s:13:"mod1/conf.php";s:4:"d770";s:14:"mod1/index.php";s:4:"8ea3";s:18:"mod1/locallang.php";s:4:"be64";s:22:"mod1/locallang_mod.php";s:4:"3c89";s:19:"mod1/moduleicon.gif";s:4:"0b86";s:30:"mod1/_notes/moduleicon.gif.mno";s:4:"8249";s:27:"images/noImageAvailable.gif";s:4:"160c";s:14:"doc/manual.sxw";s:4:"e223";s:19:"doc/wizard_form.dat";s:4:"b962";s:20:"doc/wizard_form.html";s:4:"cccc";s:23:"example/ke_smallads.css";s:4:"54fb";s:31:"pi1/class.tx_kesmallads_pi1.php";s:4:"93a6";s:17:"pi1/locallang.php";s:4:"b1f3";s:24:"pi1/static/editorcfg.txt";s:4:"b895";s:20:"pi1/static/setup.txt";s:4:"d00e";}',
 	'suggests' => array(
 	),
 );

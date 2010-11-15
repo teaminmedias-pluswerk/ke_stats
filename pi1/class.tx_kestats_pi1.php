@@ -453,6 +453,8 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 * @param int $element_type
 	 * @param string $stat_type
 	 * @param int $parent_uid
+	 * @param string $additionalData Additional data, must be processed by a custom hook.
+	 * @param int $counter By what number should the statistic counter be increased? Default is 1.
 	 * @access public
 	 * @return void
 	 */
@@ -465,7 +467,9 @@ class tx_kestats_pi1 extends tslib_pibase {
 						$element_language=0,
 						$element_type=0,
 						$stat_type=STAT_TYPE_PAGES,
-						$parent_uid=0
+						$parent_uid=0,
+						$additionalData='',
+						$counter=1
 						) {
 
 		// transfer the general statdate to the shared library
@@ -479,7 +483,10 @@ class tx_kestats_pi1 extends tslib_pibase {
 						$element_language,
 						$element_type,
 						$stat_type,
-						$parent_uid);
+						$parent_uid,
+						$additionalData,
+						$counter
+						);
 	}
 
 	/**

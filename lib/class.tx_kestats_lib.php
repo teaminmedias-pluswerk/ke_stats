@@ -65,10 +65,11 @@ class tx_kestats_lib {
 	 * @param string $stat_type
 	 * @param int $parent_uid
 	 * @param string $additionalData Additional data, must be processed by a custom hook.
+	 * @param int $counter By what number should the statistic counter be increased? Default is 1.
 	 * @access public
 	 * @return void
 	 */
-	function increaseCounter($category, $compareFieldList, $element_title='', $element_uid=0, $element_pid=0, $element_language=0, $element_type=0, $stat_type=STAT_TYPE_PAGES, $parent_uid=0, $additionalData='') {/*{{{*/
+	function increaseCounter($category, $compareFieldList, $element_title='', $element_uid=0, $element_pid=0, $element_language=0, $element_type=0, $stat_type=STAT_TYPE_PAGES, $parent_uid=0, $additionalData='', $counter = 1) {/*{{{*/
 
 			// hook for individual modifications of the statistical data
 			// before submitting it to the queue or updatign it directly
@@ -106,7 +107,8 @@ class tx_kestats_lib {
 				$element_type,
 				$stat_type,
 				$parent_uid,
-				$additionalData);
+				$additionalData,
+				$counter);
 
 		} else {
 
@@ -121,7 +123,8 @@ class tx_kestats_lib {
 					'element_type' => $element_type,
 					'stat_type' => $stat_type,
 					'parent_uid' => $parent_uid,
-					'additionalData' => $additionalData
+					'additionalData' => $additionalData,
+					'counter' => $counter
 					);
 
 				// insert into queue
@@ -508,10 +511,11 @@ class tx_kestats_lib {
 	 * @param string $stat_type
 	 * @param int $parent_uid
 	 * @param string $additionalData Additional data, must be processed by a custom hook.
+	 * @param int $counter By what number should the statistic counter be increased? Default is 1.
 	 * @access public
 	 * @return void
 	 */
-	function updateStatisticsTable($category, $compareFieldList, $element_title='', $element_uid=0, $element_pid=0, $element_language=0, $element_type=0, $stat_type=STAT_TYPE_PAGES, $parent_uid=0, $additionalData='') {/*{{{*/
+	function updateStatisticsTable($category, $compareFieldList, $element_title='', $element_uid=0, $element_pid=0, $element_language=0, $element_type=0, $stat_type=STAT_TYPE_PAGES, $parent_uid=0, $additionalData='', $counter = 1) {
 
 			// check if there is already an entry for this combination of
 			// statistical data. Takes compareFieldList into account
@@ -543,7 +547,7 @@ class tx_kestats_lib {
 			$insertFields['parent_uid'] = $parent_uid;
 			$insertFields['tstamp'] = $this->now;
 			$insertFields['crdate'] = $this->now;
-			$insertFields['counter'] = 1;
+			$insertFields['counter'] = $counter;
 
 				// Set only the time fields which are necessary for this
 				// category (those which are in the $compareFieldList)
@@ -571,13 +575,13 @@ class tx_kestats_lib {
 
 				// increase existing counter
 			$updateFields = array();
-			$updateFields['counter'] = $statEntry['counter'] + 1;
+			$updateFields['counter'] = $statEntry['counter'] + $counter;
 			$updateFields['tstamp'] = $this->now;
 			$where_clause = 'uid = ' . $statEntry['uid'];
 			$res = $GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_kestats_statdata', $where_clause, $updateFields);
 			unset($updateFields);
 		}
-	}/*}}}*/
+	}
 
 	/**
 	 * Returns the UID of an enty in the data table matching the $compareFieldList (comma-separated list).

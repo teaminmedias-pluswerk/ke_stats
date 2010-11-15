@@ -70,6 +70,10 @@ do {
 		// process it and delete it
 	if ($oldestEntry) {
 		$dataArray = unserialize($oldestEntry['data']);
+
+			// compatibility with older versions
+		$dataArray['counter'] = $dataArray['counter'] ? $dataArray['counter'] : 1;
+	
 		$kestatslib->statData = unserialize($oldestEntry['generaldata']);
 
 			// make sure we only process valid data
@@ -84,7 +88,9 @@ do {
 					$dataArray['element_type'],
 					$dataArray['stat_type'],
 					$dataArray['parent_uid'],
-					$dataArray['additionalData']);
+					$dataArray['additionalData'],
+					$dataArray['counter']
+					);
 			$counter++;
 		} else {
 			$counter_invalid++;

@@ -73,7 +73,7 @@ do {
 
 			// compatibility with older versions
 		$dataArray['counter'] = $dataArray['counter'] ? $dataArray['counter'] : 1;
-	
+
 		$kestatslib->statData = unserialize($oldestEntry['generaldata']);
 
 			// make sure we only process valid data

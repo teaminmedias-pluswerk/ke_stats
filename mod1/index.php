@@ -22,7 +22,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
-define(UPDATED_UNTIL_DATEFORMAT, 'd.m.Y, H:i:s');
+define('UPDATED_UNTIL_DATEFORMAT', 'd.m.Y, H:i:s');
 
 	// DEFAULT initialization of a module [BEGIN]
 unset($MCONF);

@@ -386,7 +386,7 @@ class tx_kestats_lib {
 							// So we can access them here directly.
 							$element_already_counted = 0;
 							for ($i = 0; $i<=$lineCounter; $i++) {
-								if ($resultArray[$i]['element_title'] == $row['element_title']) {
+								if ($resultArray[$i]['element_title'] == $row['element_title'] && $resultArray[$i]['element_language'] == $row['element_language']) {
 									$resultArray[$i]['counter'] += $row['counter'];
 									$element_already_counted = 1;
 								}

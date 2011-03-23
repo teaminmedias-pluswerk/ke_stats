@@ -1442,6 +1442,17 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			$i++;
 		}
 
+		// Kick out every field from the dataRows which should not be rendered
+		if (count($dataRows) > 0) {
+			foreach ($dataRows as $label => $dataRow) {
+				foreach ($dataRow as $column_name => $data) {
+					if (!in_array($column_name, $columnsArray)) {
+						unset($dataRows[$label][$column_name]);
+					}
+				}
+			}
+		}
+
 		// first we calculate the sum for each column
 		$sumRow = array();
 		if (count($dataRows) > 0) {

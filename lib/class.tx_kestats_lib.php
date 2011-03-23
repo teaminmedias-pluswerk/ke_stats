@@ -386,7 +386,10 @@ class tx_kestats_lib {
 							// So we can access them here directly.
 							$element_already_counted = 0;
 							for ($i = 0; $i<=$lineCounter; $i++) {
-								if ($resultArray[$i]['element_title'] == $row['element_title'] && $resultArray[$i]['element_language'] == $row['element_language']) {
+								if ($resultArray[$i]['element_title'] == $row['element_title']
+									&& $resultArray[$i]['element_language'] == $row['element_language']
+									&& $resultArray[$i]['element_type'] == $row['element_type']
+									) {
 									$resultArray[$i]['counter'] += $row['counter'];
 									$element_already_counted = 1;
 								}
@@ -404,6 +407,7 @@ class tx_kestats_lib {
 									$resultArray[$lineCounter][$field] = $row[$field];
 								}
 								$resultArray[$lineCounter]['element_language'] = $row['element_language'];
+								$resultArray[$lineCounter]['element_type'] = $row['element_type'];
 							}
 						}
 					}

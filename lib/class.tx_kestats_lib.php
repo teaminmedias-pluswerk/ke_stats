@@ -403,6 +403,7 @@ class tx_kestats_lib {
 								foreach (explode(',',$columns) as $field) {
 									$resultArray[$lineCounter][$field] = $row[$field];
 								}
+								$resultArray[$lineCounter]['element_language'] = $row['element_language'];
 							}
 						}
 					}

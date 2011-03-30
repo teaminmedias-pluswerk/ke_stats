@@ -1137,7 +1137,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 							// add this row to the result
 							$printRows[] = $printRow;
 						}
-						$content .= $this->renderTable($tableHeader,'crdate,time,duration,element_title,element_uid,element_language',$printRows,'no_line_numbers','counter','');
+						$content .= $this->renderTable($tableHeader,'date,time,duration,element_title,element_uid,element_language',$printRows,'no_line_numbers','counter','');
 						unset($printRows);
 						unset($lastRow);
 					}

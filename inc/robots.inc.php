@@ -180,6 +180,7 @@ $GLOBALS['robots'] = array(/*{{{*/
 	'MnoGoSearch/' => 'MnoGoSearch',
 	'Xerka WebBot' => 'Xerka WebBot',
 	'Twitterbot' => 'Twitterbot',
-	'SheenBot/' => 'SheenBot'
+	'SheenBot/' => 'SheenBot',
+	'bingbot' => 'Bingbot'
 );/*}}}*/
 ?>

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Christian Bülter <buelter@kennziffer.com>
+*  (c) 2007-2011 Christian BÃ¼lter <buelter@kennziffer.com>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -25,7 +25,7 @@
 /**
  * Shared library 'ke_stats' extension.
  *
- * @author	Christian Bülter <buelter@kennziffer.com>
+ * @author	Christian BÃ¼lter <buelter@kennziffer.com>
  * @package	TYPO3
  * @subpackage	tx_kestats
  */
@@ -461,7 +461,7 @@ class tx_kestats_lib {
 	 * @param int $to_month
 	 * @access public
 	 * @return array
-	 * @author Christoph Blömer <info@christoph-bloemer.de>
+	 * @author Christoph Blï¿½mer <info@christoph-bloemer.de>
 	 */
 	function getDateArray($from_year,$from_month,$to_year,$to_month){/*{{{*/
 		$fromToArray=array();

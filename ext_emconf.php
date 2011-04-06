@@ -12,7 +12,7 @@
 
 $EM_CONF[$_EXTKEY] = array(
 	'title' => 'Statistics',
-	'description' => 'Statistics for TYPO3: pageviews/visits, live visitor tracking and extension statistics. Supports fe_users, languages and page types. Support for tt_news and commerce is built in. Easy to adapt to other extensions.',
+	'description' => 'Statistics for TYPO3: pageviews/visits, live visitor tracking and extension statistics. Supports fe_users, languages and page types. Can count file accesses. Support for tt_news and commerce is built in. Easy to adapt to other extensions.',
 	'category' => 'module',
 	'shy' => 0,
 	'version' => '0.6.3',

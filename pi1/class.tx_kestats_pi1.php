@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007-2009 Christian Bülter <buelter@kennziffer.com>
+*  (c) 2007-2011 Christian BÃ¼lter <buelter@kennziffer.com>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -33,7 +33,7 @@ require_once(PATH_BE_KESTATS.'lib/class.tx_kestats_lib.php');
 /**
  * Plugin 'statistics counter' for the 'ke_stats' extension.
  *
- * @author	Christian Bülter <buelter@kennziffer.com>
+ * @author	Christian BÃ¼lter <buelter@kennziffer.com>
  * @package	TYPO3
  * @subpackage	tx_kestats
  */

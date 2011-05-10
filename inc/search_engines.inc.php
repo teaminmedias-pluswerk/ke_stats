@@ -30,7 +30,7 @@
 
 // List of search_engines (referer)
 
-$GLOBALS['search_engines'] = array(/*{{{*/
+$GLOBALS['search_engines'] = array(
 	'www.google' => 'Google',
 	'images.google' => 'Google Images',
 	'search.live' => 'MSN',
@@ -48,6 +48,5 @@ $GLOBALS['search_engines'] = array(/*{{{*/
 	'search.icq.com' => 'Icq.com',
 	'search.sweetim.com' => 'Sweetim.com',
 	'search.ch' => 'Search.ch'
-);/*}}}*/
-
+);
 ?>

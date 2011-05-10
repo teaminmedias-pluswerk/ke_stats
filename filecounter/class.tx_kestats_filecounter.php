@@ -100,51 +100,60 @@ class tx_kestats_filecounter {
 	 *
 	 */
 	public function countFile() {
-		$file = realpath($_SERVER['DOCUMENT_ROOT'] . $_SERVER['REQUEST_URI']);
+		$request = t3lib_div::getIndpEnv('REQUEST_URI');
+		if($test == 'url') {
+			$file = realpath($_SERVER['DOCUMENT_ROOT'] . urldecode($request));
+		} else {
+			$file = realpath($_SERVER['DOCUMENT_ROOT'] . $request);
+		}
 
-			// check if file exists
-		if (is_file($file)) {
-			$fileinfo = pathinfo($file);
-			$filename = $fileinfo['basename'];
-			$filepath = $fileinfo['dirname'];
-			$fileextension = strtolower($fileinfo['extension']);
-
-				// Must be set in order to use ke_stats
+		// get fileinfomations if possible
+		if($fileinfo = $this->getFileInfo($file)) {
+			t3lib_div::devlog('fi', 'fi', -1, array(
+				$fileinfo
+			));
+			// Must be set in order to use ke_stats
 			$GLOBALS['TSFE']->config['config']['language'] = 0;
 
-			if (t3lib_extMgm::isLoaded('ke_stats')) {
+			if(t3lib_extMgm::isLoaded('ke_stats')) {
 				$keStatsObj = t3lib_div::getUserObj('EXT:ke_stats/pi1/class.tx_kestats_pi1.php:tx_kestats_pi1');
 				$keStatsObj->initApi();
 
 					// don't count access from robots
-				if (!$keStatsObj->statData['is_robot']) {
+				if(!$keStatsObj->statData['is_robot']) {
 
-					$category = $this->messages['backend_tabname'];
-					$compareFieldList = 'element_uid,element_title,year,month';
-					//$element_title = htmlspecialchars(strip_tags($filename)) . ' (' . $filepath . ')';
-					$element_title = htmlspecialchars(strip_tags($filename));
-					$element_uid = 0;
-					$element_pid = $this->extConf['fileAccessCountOnPage'] ? intval($this->extConf['fileAccessCountOnPage']) : 0;
-					$element_language = $GLOBALS['TSFE']->sys_page->sys_language_uid;
-					$element_type = 0;
-					$stat_type = 'extension';
-					$amount = 0;
-					$parent_uid = 0;
-					$additionalData = '';
-					$counter = 1;
+					$fields['category']         = $this->messages['backend_tabname'];
+					$fields['compareFieldList'] = 'element_uid,element_title,year,month';
+					$fields['elementTitle']     = $fileinfo['file'];
+					$fields['elementUid']       = 0;
+					$fields['elementPid']       = $this->extConf['fileAccessCountOnPage'] ? intval($this->extConf['fileAccessCountOnPage']) : 0;
+					$fields['elementLanguage']  = $GLOBALS['TSFE']->sys_page->sys_language_uid;
+					$fields['elementType']      = 0;
+					$fields['statType']         = 'extension';
+					$fields['parentUid']        = 0;
+					$fields['additionalData']   = '';
+					$fields['counter']          = 1;
+					
+					// hook for individual modifications of the statistical filedata
+					if(is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyFileDataBeforeQueue'])) {
+						foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyFileDataBeforeQueue'] as $_classRef) {
+							$_procObj = &t3lib_div::getUserObj($_classRef);
+							$_procObj->modifyFileDataBeforeQueue($fields, $fileinfo, $keStatsObj, $this);
+						}
+					}
 
 					$keStatsObj->increaseCounter(
-						$category,
-						$compareFieldList,
-						$element_title,
-						$element_uid,
-						$element_pid,
-						$element_language,
-						$element_type,
-						$stat_type,
-						$parent_uid,
-						$additionalData,
-						$counter
+						$fields['category'],
+						$fields['compareFieldList'],
+						$fields['elementTitle'],
+						$fields['elementUid'],
+						$fields['elementPid'],
+						$fields['elementLanguage'],
+						$fields['elementType'],
+						$fields['statType'],
+						$fields['parentUid'],
+						$fields['additionalData'],
+						$fields['counter']
 					);
 				}
 				unset($keStatsObj);
@@ -165,4 +174,59 @@ class tx_kestats_filecounter {
 			echo $this->messages['file_not_found'];
 		}
     }
+
+    /**
+	 * Try to get all available file informations
+	 *
+	 * @param string $file
+	 * @return array
+	 */
+	public function getFileInfo($file) {
+		// check if file is available
+		if(is_file($file)) {
+			$fileinfo = t3lib_div::split_fileref($file);
+			$fileinfo['file'] = $this->cleanFileName($fileinfo['file']);
+			$fileinfo['dirInfo'] = $this->getDirInfo($file);
+
+			return $fileinfo;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * removes or replaces special entities from filename
+	 *
+	 * @param string $file
+	 * @return string cleaned filename
+	 */
+	public function cleanFileName($file) {
+		$file = strip_tags($file);
+		$file = htmlspecialchars($file);
+
+		return $file;
+	}
+
+	/**
+	 * explodes the dirname into seperate pieces
+	 *
+	 * @param string $path
+	 * @return array seperated dirname parts
+	 */
+	public function getDirInfo($file) {
+		$pathArray = array();
+		$pathArray['fullPath'] = $fullPath = t3lib_div::dirname($file) . '/'; // /var/www/projects/myProject/fileadmin/user_upload/
+		$pathArray['rootPath'] = $rootPath = str_replace(PATH_site, '', $fullPath); // /fileadmin/user_upload/
+		
+		// hook for adding some more path modifications
+		// this is useful, if you use foldernames as year or language and you want to save this data, too
+		if(is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyPathArray'])) {
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyPathArray'] as $_classRef) {
+				$_procObj = &t3lib_div::getUserObj($_classRef);
+				$_procObj->modifyPathArray($file, $pathArray, $this);
+			}
+		}
+		
+		return $pathArray;
+	}
 }

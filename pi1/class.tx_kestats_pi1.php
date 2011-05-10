@@ -72,7 +72,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 * @param	array		$conf: The PlugIn configuration
 	 * @return
 	 */
-	function main($content,$conf)	{/*{{{*/
+	function main($content,$conf)	{
 		$this->conf = $conf;
 		$this->browsers = $GLOBALS['browsers'];
 		$this->robots = $GLOBALS['robots'];
@@ -414,7 +414,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 		$this->logTimeTracking();
 
 		return '';
-	}/*}}}*/
+	}
 
 
 
@@ -503,11 +503,11 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 * @access public
 	 * @return void
 	 */
-	function trackTime($desc = '') {/*{{{*/
+	function trackTime($desc = '') {
 		if ($this->debug_timetracking) {
 			$this->timetracking[$desc] = t3lib_div::milliseconds() - $this->timetracking_start;
 		}
-	}/*}}}*/
+	}
 
 	/**
 	 * logTimeTracking
@@ -515,11 +515,11 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 * @access public
 	 * @return void
 	 */
-	function logTimeTracking() {/*{{{*/
+	function logTimeTracking() {
 		if ($this->debug_timetracking) {
 			t3lib_div::devLog('timetracking', $this->extKey, 0, $this->timetracking);
 		}
-	}/*}}}*/
+	}
 
 	/**
 	 * returns a hostname without 'www.' in the beginning
@@ -527,12 +527,12 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 * @param string $hostname
 	 * @return string
 	 */
-	function getHostnameWithoutWWW($hostname) {/*{{{*/
+	function getHostnameWithoutWWW($hostname) {
 		if (substr($hostname,0,strlen('www.')) == 'www.') {
 			$hostname = substr($hostname,strlen('www.'));
 		}
 		return $hostname;
-	}/*}}}*/
+	}
 
 	/**
 	 * sanitizeData
@@ -543,9 +543,9 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 * @access public
 	 * @return string
 	 */
-	function sanitizeData($data='') {/*{{{*/
+	function sanitizeData($data='') {
 		return htmlspecialchars($data, ENT_QUOTES);
-	}/*}}}*/
+	}
 
 	/**
 	 * getTimeData
@@ -554,13 +554,13 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 * @access public
 	 * @return void
 	 */
-	function getTimeData() {/*{{{*/
+	function getTimeData() {
 		$this->statData['year'] = date('Y',$this->now);
 		$this->statData['month'] = date('n',$this->now);
 		$this->statData['day'] = date('j',$this->now);
 		$this->statData['day_of_week'] = date('w',$this->now);
 		$this->statData['hour'] = date('G',$this->now);
-	}/*}}}*/
+	}
 
 	/**
 	 * Collect all the needed statistical data for the different categories
@@ -568,7 +568,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 *
 	 * @return 0
 	 */
-	function getData() {/*{{{*/
+	function getData() {
 			// get the environment data
 		$this->statData['http_host'] = $this->sanitizeData(t3lib_div::getIndpEnv('HTTP_HOST'));
 		$this->statData['http_referer'] = $this->sanitizeData(t3lib_div::getIndpEnv('HTTP_REFERER'));
@@ -670,7 +670,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 		}
 
 		return 0;
-	}/*}}}*/
+	}
 
 
 	/**
@@ -680,7 +680,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 * @param string $charset
 	 * @return string
 	 */
-	function getSearchwordFromReferer($uri,$charset="UTF-8") {/*{{{*/
+	function getSearchwordFromReferer($uri,$charset="UTF-8") {
 		// Google & MSN: "q="
 		// Yahoo: "p="
 		$searchWordParamBegin = array('q=','p=');
@@ -707,7 +707,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 		}
 		$trans = array (':' => "", '"' => "", "'" => "", "<" => "", ">" => "", " -" => "", "(" => "", ")" => "", "~" => "", "*" => "");
 		return strtr($keywords, $trans);
-	}/*}}}*/
+	}
 
 	/**
 	 * debugMail
@@ -719,7 +719,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 * @access public
 	 * @return void
 	 */
-	function debugMail($content='',$subject = 'TYPO3 Debug Mail') {/*{{{*/
+	function debugMail($content='',$subject = 'TYPO3 Debug Mail') {
 		if ($this->debug_email) {
 			if (is_array($content)) {
 				$content = t3lib_div::view_array($content);
@@ -731,7 +731,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 
 			mail($this->debug_email,$subject,$content,$header);
 		}
-	}/*}}}*/
+	}
 
 	/**
  	* Logs data to the logfileDir (set in extension manager)
@@ -774,7 +774,6 @@ class tx_kestats_pi1 extends tslib_pibase {
 		return $str;
 	}
 }
-
 
 
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/ke_stats/pi1/class.tx_kestats_pi1.php'])	{

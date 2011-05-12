@@ -124,14 +124,14 @@ class backendMenu {
 		foreach ($menuArray as $menuValue => $menuDescription) {
 			// transform 0 to NULL_VALUE
 			// otherwise 0 would not be a possible value to select in the form
-			if ($menuValue==0) {
+			if (strval($menuValue) === '0') {
 				$menuValue = NULL_VALUE;
 			}
 			$allowedValues[] = $menuValue;
 		}
-
+		
 		// get the selected value for this menu
-		$selectedValue = $this->getSelectedValue($menuName,$allowedValues);
+		$selectedValue = $this->getSelectedValue($menuName, $allowedValues);
 
 		// render the form
 		$formURL = 'index.php?id='.t3lib_div::_GET('id').$additionalParams;
@@ -140,10 +140,10 @@ class backendMenu {
 		$menuHTML .= '<select name="'.$menuName.'" size="1" class="basicselect" onchange="document.'.$formName.'.submit();">';
 		foreach ($menuArray as $menuValue => $menuDescription) {
 			$menuHTML .= '<option ';
-			if ($selectedValue == $menuValue) $menuHTML .= 'class="selected" selected ';
+			if ($selectedValue == $menuValue) $menuHTML .= 'class="selected" selected="selected" ';
 			// transform 0 to NULL_VALUE
 			// otherwise 0 would not be a possible value to select in the form
-			if ($menuValue==0) {
+			if (strval($menuValue) === '0') {
 				$menuValue = NULL_VALUE;
 			}
 			$menuHTML .= 'value="'.$menuValue.'">';

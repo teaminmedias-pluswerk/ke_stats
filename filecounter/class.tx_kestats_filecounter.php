@@ -24,7 +24,7 @@
 
 class tx_kestats_filecounter {
 	public $messages = array(
-		'backend_tabname' => 'Downloads',
+		'backend_tabname' => 'downloads',
 		'file_not_found' => 'File not found'
 	);
 

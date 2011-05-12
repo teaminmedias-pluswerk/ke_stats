@@ -73,7 +73,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * Initializes the Module
 	 * @return	void
 	 */
-	function init()	{/*{{{*/
+	function init()	{
 		global $BE_USER,$LANG,$BACK_PATH,$TCA_DESCR,$TCA,$CLIENT,$TYPO3_CONF_VARS;
 
 		parent::init();
@@ -107,14 +107,14 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			$this->include_once[] = PATH_t3lib.'class.t3lib_tcemain.php';
 		}
 		*/
-	}/*}}}*/
+	}
 
 	/**
 	 * Adds items to the ->MOD_MENU array. Used for the function menu selector.
 	 *
 	 * @return	void
 	 */
-	function menuConfig()	{/*{{{*/
+	function menuConfig()	{
 		global $LANG;
 		$this->MOD_MENU = Array (
 			'function' => Array (
@@ -124,14 +124,14 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			)
 		);
 		parent::menuConfig();
-	}/*}}}*/
+	}
 
 	/**
 	 * Main function of the module.
 	 *
 	 * @return	string
 	 */
-	function main()	{/*{{{*/
+	function main()	{
 		global $BE_USER,$LANG,$BACK_PATH,$TCA_DESCR,$TCA,$CLIENT,$TYPO3_CONF_VARS;
 
 			// Access check!
@@ -190,7 +190,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				// Init tab menus
 			$this->tabmenu->initMenu('type','overview');
 			$now = time();
-			$this->tabmenu->initMenu('month',date('n',$now));
+			$this->tabmenu->initMenu('month',-1);
 			$this->tabmenu->initMenu('year',date('Y',$now));
 			$this->tabmenu->initMenu('element_language',-1);
 			$this->tabmenu->initMenu('element_type',-1);
@@ -271,7 +271,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				</script>';
 			}
 
-			$this->content .= $this->doc->startPage($LANG->getLL('title'));
+			//$this->content .= $this->doc->startPage($LANG->getLL('title'));
 			//$this->content .= $this->doc->header($LANG->getLL('title'));
 			$this->content .= '<div class="extensiontitle"><img src="moduleicon.gif" />KE Stats</div>';
 			//$this->content .= $this->doc->spacer(5);
@@ -624,6 +624,9 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 				// Render content
 			$this->content .= $this->moduleContent();
+			// this is not the best solution...but it works //TODO
+			// normally startpage has to be before moduleContent()
+			$this->content .= $this->doc->startPage($LANG->getLL('title'));
 
 				// ShortCut
 			if ($BE_USER->mayMakeShortcut())	{
@@ -643,7 +646,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			$this->content.=$LANG->getLL('please_select_page');
 			$this->content.=$this->doc->spacer(10);
 		}
-	}/*}}}*/
+	}
 
 	/**
 	 * renderOverviewPage
@@ -654,7 +657,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * @access public
 	 * @return void
 	 */
-	function renderOverviewPage() {/*{{{*/
+	function renderOverviewPage() {
 		$content = '';
 
 		// div for chart rendering (using flotr)
@@ -677,7 +680,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		*/
 
 		return $content;
-	}/*}}}*/
+	}
 
 	/**
 	 * Returns a selectorboxes for month/year/language/type for the given data
@@ -686,7 +689,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * @param array $statCategory
 	 * @return string
 	 */
-	function renderSelectorMenu($statType,$statCategory) {/*{{{*/
+	function renderSelectorMenu($statType,$statCategory) {
 		$content = '';
 		$fromToArray = $this->getFirstAndLastEntries($statType,$statCategory);
 
@@ -703,7 +706,9 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 			// render only months for which data exists
 		$monthArray = array();
+		$monthArray[-1] = 'Alle Monate';
 		$this->allowedMonths = array();
+		$this->allowedMonths[] = -1;
 		for ($month = 1; $month<=12; $month++) {
 			if ($this->tabmenu->getSelectedValue('year') == $fromToArray['from_year'] && $fromToArray['from_year']== $fromToArray['to_year']) {
 				if ($month >= $fromToArray['from_month'] && $month <= $fromToArray['to_month']) {
@@ -772,7 +777,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		}
 
 		return $content;
-	}/*}}}*/
+	}
 
 	/**
 	 * returns the cleartext name of a language uid
@@ -780,7 +785,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * @param integer $sys_language_uid
 	 * @return string
 	 */
-	function getLanguageName($sys_language_uid) {/*{{{*/
+	function getLanguageName($sys_language_uid) {
 		// get the language name from sys_language
 		if ($sys_language_uid == 0) {
 			return $GLOBALS['LANG']->getLL('language_default');
@@ -789,21 +794,21 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			$rowLanguage = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($resLanguage);
 			return $rowLanguage['title'];
 		}
-	}/*}}}*/
+	}
 
 	/**
 	 * Prints out the module HTML
 	 *
 	 * @return	void
 	 */
-	function printContent()	{/*{{{*/
+	function printContent()	{
 		$this->content.=$this->doc->endPage();
 		if ($this->csvOutput) {
 			$this->outputCSV();
 		} else {
 			echo $this->content;
 		}
-	}/*}}}*/
+	}
 
 	/**
 	 * Generates the main content (renders the statistics)
@@ -811,7 +816,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 *
 	 * @return	string
 	 */
-	function moduleContent() {/*{{{*/
+	function moduleContent() {
 		$content = '';
 		switch($this->tabmenu->getSelectedValue('type')) {
 
@@ -1151,13 +1156,15 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				$content .= $this->renderSelectorMenu(STAT_TYPE_EXTENSION,$category);
 				$columns = 'element_title,element_uid,counter';
 				$resultArray = $this->getStatResults(STAT_TYPE_EXTENSION,$category,$columns);
-				$content .= $this->renderTable($GLOBALS['LANG']->getLL('type_extension'),$columns,$resultArray,$this->tabmenu->getSelectedValue('extension_type',$this->allowedExtensionTypes));
+				$content .= $this->addContentAboveTable($resultArray, 'extension', $category);
+				$content .= $this->renderTable($GLOBALS['LANG']->getLL('type_extension'),$columns,$resultArray,$category);
+				$content .= $this->addContentBelowTable($resultArray, 'extension', $category);
 				$content .= $this->renderUpdateInformation();
 			break;
 		}
 
 		return $content;
-	}/*}}}*/
+	}
 
 	/**
 	 * renderUpdateInformation
@@ -1168,7 +1175,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * @access public
 	 * @return void
 	 */
-	function renderUpdateInformation() {/*{{{*/
+	function renderUpdateInformation() {
 		$content = '';
 		if ($this->extConf['asynchronousDataRefreshing']) {
 			$oldestEntry = $this->kestatslib->getOldestQueueEntry();
@@ -1177,7 +1184,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			}
 		}
 		return $content;
-	}/*}}}*/
+	}
 
 	/**
 	 * Returns an array with statistical data of a certain time period.
@@ -1192,7 +1199,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * @param array $fromToArray: contains the time period for which the statistical data shoud be generated (year and month from and to). If empty, it will be populated automatically within the function.
 	 * @return array
 	 */
-	function getStatResults($statType='pages',$statCategory,$columns,$onlySum=0,$orderBy='counter DESC',$groupBy='',$encode_title_to_utf8=0, $fromToArray=array()) {/*{{{*/
+	function getStatResults($statType='pages',$statCategory,$columns,$onlySum=0,$orderBy='counter DESC',$groupBy='',$encode_title_to_utf8=0, $fromToArray=array()) {
 		$columns = $this->addTypeAndLanguageToColumns($columns);
 
 		// find out the time period, if it is not given as a parameter
@@ -1213,7 +1220,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		$element_type = intval($this->tabmenu->getSelectedValue('element_type'));
 
 		return $this->kestatslib->getStatResults($statType, $statCategory, $columns, $onlySum, $orderBy, $groupBy, $encode_title_to_utf8, $fromToArray, $element_language, $element_type);
-	}/*}}}*/
+	}
 
 	/**
 	 * addTypeAndLanguageToColumns
@@ -1224,7 +1231,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * @access public
 	 * @return string
 	 */
-	function addTypeAndLanguageToColumns($columns='') {/*{{{*/
+	function addTypeAndLanguageToColumns($columns='') {
 		if (sizeof($this->elementTypesArray)>0 && $this->tabmenu->getSelectedValue('element_type')==-1) {
 			$columns = str_replace('element_title','element_title,element_type',$columns);
 		}
@@ -1232,7 +1239,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			$columns = str_replace('element_title','element_title,element_language',$columns);
 		}
 		return $columns;
-	}/*}}}*/
+	}
 
 	/**
 	 * returns year and month of the first and the last entry of given statistic types / categories
@@ -1241,7 +1248,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * @param string $statCategory
 	 * @return array
 	 */
-	function getFirstAndLastEntries($statType,$statCategory) {/*{{{*/
+	function getFirstAndLastEntries($statType,$statCategory) {
 		$fromToArray = array();
 		$fromToArray['from_month'] = 0;
 		$fromToArray['from_year'] = 0;
@@ -1275,7 +1282,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		}
 
 		return $fromToArray;
-	}/*}}}*/
+	}
 
 	/**
 	 * returns a html table, rendered from the array $dataRows.
@@ -1291,7 +1298,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * @param string $maxrows: Max. rows to render. 0 --> render all rows.
 	 * @return string
 	 */
-	function renderTable($caption='Table',$columns='element_title,element_uid,counter',$dataRows=array(),$special='',$columnWithSum='counter',$columnWithPercent='counter',$maxrows=0) {/*{{{*/
+	function renderTable($caption='Table',$columns='element_title,element_uid,counter',$dataRows=array(),$special='',$columnWithSum='counter',$columnWithPercent='counter',$maxrows=0) {
 
 		$columns = $this->addTypeAndLanguageToColumns($columns);
 		$content = '';
@@ -1532,7 +1539,43 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		}
 		$content .= '</table>';
 		return $content;
-	}/*}}}*/
+	}
+
+	/**
+	* method which calles a hook to add some content above table
+	*
+	* @param array
+	* @param string $type
+	* @param string $category
+	* @return string html
+	*/
+	public function addContentAboveTable($resultArray, $type, $category) {
+		// hook for additional content above table
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['addContentAboveTable'])) {
+			foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['addContentAboveTable'] as $_classRef) {
+				$_procObj = & t3lib_div::getUserObj($_classRef);
+				return $_procObj->addContentAboveTable($resultArray, $type, $category, $this);
+			}
+		}
+	}
+
+	/**
+	* method which calles a hook to add some content below table
+	*
+	* @param array
+	* @param string $type
+	* @param string $category
+	* @return string html
+	*/
+	public function addContentBelowTable($resultArray, $type, $category) {
+		// hook for additional content above table
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['addContentBelowTable'])) {
+			foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['addContentBelowTable'] as $_classRef) {
+				$_procObj = & t3lib_div::getUserObj($_classRef);
+				return $_procObj->addContentBelowTable($resultArray, $type, $category, $this);
+			}
+		}
+	}
 
 	/**
 	 * addCsvCol
@@ -1541,10 +1584,10 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * @access public
 	 * @return void
 	 */
-	function addCsvCol($content='') {/*{{{*/
+	function addCsvCol($content='') {
 		$this->csvContent[$this->currentRowNumber][$this->currentColNumber] = $content;
 		$this->currentColNumber++;
-	}/*}}}*/
+	}
 
 	/**
 	 * addCsvRow
@@ -1552,11 +1595,11 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * @access public
 	 * @return void
 	 */
-	function addCsvRow() {/*{{{*/
+	function addCsvRow() {
 		$this->currentRowNumber++;
 		$this->currentColNumber = 0;
 		$this->csvContent[$this->currentRowNumber] = array();
-	}/*}}}*/
+	}
 
 	/**
 	 * outputCSV
@@ -1564,7 +1607,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * @access public
 	 * @return void
 	 */
-	function outputCSV() {/*{{{*/
+	function outputCSV() {
 		// Set Excel as default application
 		header('Pragma: private');
 		header('Cache-control: private, must-revalidate');
@@ -1586,14 +1629,14 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 		echo $content;
 		exit();
-	}/*}}}*/
+	}
 
 	/**
 	 * returns the css for the result tables
 	 *
 	 * @return string
 	 */
-	function getTableCSS() {/*{{{*/
+	function getTableCSS() {
 		return '
 
 .extensiontitle {
@@ -1701,7 +1744,7 @@ table.ke-stats-table tbody a:visited:after {
 	/*content: "\00A0\221A"*/
 }
 		';
-	}/*}}}*/
+	}
 
 
 	/**
@@ -1716,7 +1759,7 @@ table.ke-stats-table tbody a:visited:after {
 	 * @access public
 	 * @return void
 	 */
-	function loadFrontendTSconfig($pageUid=0,$plugin_name='') {/*{{{*/
+	function loadFrontendTSconfig($pageUid=0,$plugin_name='') {
 		if ($pageUid>0) {
 			$sysPageObj = t3lib_div::makeInstance('t3lib_pageSelect');
 			$rootLine = $sysPageObj->getRootLine($pageUid);
@@ -1730,7 +1773,7 @@ table.ke-stats-table tbody a:visited:after {
 				$this->extConf = $TSObj->setup['plugin.'][$plugin_name.'.'];
 			}
 		}
-	}/*}}}*/
+	}
 }
 
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/ke_stats/mod1/index.php'])	{

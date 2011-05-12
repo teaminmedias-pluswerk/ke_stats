@@ -45,7 +45,7 @@ class tx_kestats_lib {
 	 * @access public
 	 * @return void
 	 */
-	function tx_kestats_lib() {
+	function tx_kestats_lib() {/* {{{ */
 		$this->now = time();
 		$this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['ke_stats']);
 		$this->extConf['asynchronousDataRefreshing'] = $this->extConf['asynchronousDataRefreshing'] ? 1 : 0;
@@ -57,6 +57,8 @@ class tx_kestats_lib {
 		}
 		$this->extConf['enableBackendModuleCaching'] = $this->extConf['enableBackendModuleCaching'] ? 1 : 0;
 	}
+
+	/* }}} */
 
 	/**
 	 * Increases a statistics counter for the given $category.
@@ -79,7 +81,7 @@ class tx_kestats_lib {
 	 * @access public
 	 * @return void
 	 */
-	function increaseCounter($category, $compareFieldList, $element_title='', $element_uid=0, $element_pid=0, $element_language=0, $element_type=0, $stat_type=STAT_TYPE_PAGES, $parent_uid=0, $additionalData='', $counter = 1) {
+	function increaseCounter($category, $compareFieldList, $element_title='', $element_uid=0, $element_pid=0, $element_language=0, $element_type=0, $stat_type=STAT_TYPE_PAGES, $parent_uid=0, $additionalData='', $counter = 1) {/* {{{ */
 
 		// hook for individual modifications of the statistical data
 		// before submitting it to the queue or updatign it directly
@@ -101,7 +103,7 @@ class tx_kestats_lib {
 				);
 			}
 		}
-
+		
 		// if asynchronous data refreshing is activated, store the the data
 		// which should be counted at this point into a queue table. If not,
 		// process the data (update the counter).
@@ -148,6 +150,8 @@ class tx_kestats_lib {
 		}
 	}
 
+	/* }}} */
+
 	/**
 	 * refreshOverviewPageData
 	 *
@@ -160,7 +164,7 @@ class tx_kestats_lib {
 	 * @access public
 	 * @return void
 	 */
-	function refreshOverviewPageData($pageUid=0) {
+	function refreshOverviewPageData($pageUid=0) {/* {{{ */
 		$overviewPageData = array();
 
 		// all languages and types will be shown in the overview page
@@ -257,6 +261,8 @@ class tx_kestats_lib {
 		return $overviewPageData;
 	}
 
+	/* }}} */
+
 	/**
 	 * Returns an array with statistical data of a certain time period.
 	 *
@@ -272,7 +278,7 @@ class tx_kestats_lib {
 	 * @param int $element_type
 	 * @return array
 	 */
-	function getStatResults($statType='pages', $statCategory, $columns, $onlySum=0, $orderBy='counter DESC', $groupBy='', $encode_title_to_utf8=0, $fromToArray=array(), $element_language=0, $element_type=0) {
+	function getStatResults($statType='pages', $statCategory, $columns, $onlySum=0, $orderBy='counter DESC', $groupBy='', $encode_title_to_utf8=0, $fromToArray=array(), $element_language=0, $element_type=0) {/* {{{ */
 		$resultArray = array();
 		$yearArray = $this->getDateArray($fromToArray['from_year'], $fromToArray['from_month'], $fromToArray['to_year'], $fromToArray['to_month']);
 
@@ -296,8 +302,10 @@ class tx_kestats_lib {
 				$where_clause = 'type=\'' . $statType . '\'';
 				$where_clause .= ' AND category=\'' . $statCategory . '\'';
 				$where_clause .= ' AND year=' . $year . '';
-				$where_clause .= ' AND month=' . $month . '';
-				if ($element_language >= 0) {
+				if($month > 0) {
+					$where_clause .= ' AND month=' . $month . '';
+				}
+				if ($element_language > 0) {
 					$where_clause .= ' AND element_language=' . $element_language;
 				}
 				if ($element_type >= 0) {
@@ -435,6 +443,8 @@ class tx_kestats_lib {
 		return $resultArray;
 	}
 
+	/* }}} */
+
 	/**
 	 * getSubPages
 	 *
@@ -446,7 +456,7 @@ class tx_kestats_lib {
 	 * @access public
 	 * @return void
 	 */
-	function getSubPages($page_uid=0) {
+	function getSubPages($page_uid=0) {/* {{{ */
 		if ($page_uid) {
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'pages', 'pid=' . intval($page_uid));
 			while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
@@ -461,6 +471,8 @@ class tx_kestats_lib {
 		}
 	}
 
+	/* }}} */
+
 	/**
 	 * getDateArray
 	 *
@@ -472,9 +484,9 @@ class tx_kestats_lib {
 	 * @param int $to_month
 	 * @access public
 	 * @return array
-	 * @author Christoph Bl�mer <info@christoph-bloemer.de>
+	 * @author Christoph Bl?mer <info@christoph-bloemer.de>
 	 */
-	function getDateArray($from_year, $from_month, $to_year, $to_month) {
+	function getDateArray($from_year, $from_month, $to_year, $to_month) {/* {{{ */
 		$fromToArray = array();
 		$fromToArray['from_year'] = $from_year;
 		$fromToArray['to_year'] = $to_year;
@@ -512,6 +524,8 @@ class tx_kestats_lib {
 
 		return $dayPerMonth;
 	}
+
+	/* }}} */
 
 	/**
 	 * Increases a statistics counter.
@@ -613,7 +627,7 @@ class tx_kestats_lib {
 	 * @param string $additionalData Additional data, must be processed by a custom hook.
 	 * @return void
 	 */
-	function getStatEntry($category, $compareFieldList, $element_uid, $element_pid, $element_title, $element_language, $element_type, $stat_type, $parent_uid, $additionalData) {
+	function getStatEntry($category, $compareFieldList, $element_uid, $element_pid, $element_title, $element_language, $element_type, $stat_type, $parent_uid, $additionalData) {/* {{{ */
 		$statEntry = array();
 		$compareData = $this->statData;
 		$compareData['element_uid'] = $element_uid;
@@ -643,7 +657,7 @@ class tx_kestats_lib {
 		// loop through the fields defined in compareFieldList
 		foreach (explode(',', $compareFieldList) as $field) {
 			// is the field a string field, or an integer?
-			if (in_array($field, array('element_title', 'type'))) {
+			if (in_array($field, array('element_title', 'type', 'tx_kestatshook_type'))) {
 				// string field
 				$where_clause .= ' AND ' . $field . '=\'' . $compareData[$field] . '\'';
 			} else {
@@ -661,6 +675,8 @@ class tx_kestats_lib {
 		return $statEntry;
 	}
 
+	/* }}} */
+
 	/**
 	 * getOldestQueueEntry
 	 * find and return the oldest entry in the queue table
@@ -668,7 +684,7 @@ class tx_kestats_lib {
 	 * @access public
 	 * @return array or false
 	 */
-	function getOldestQueueEntry() {
+	function getOldestQueueEntry() {/* {{{ */
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'tx_kestats_queue', '1=1', '', 'uid ASC', '1');
 		if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
 			$result = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
@@ -677,6 +693,8 @@ class tx_kestats_lib {
 		}
 		return $result;
 	}
+
+	/* }}} */
 
 	/**
 	 * debugMail
@@ -689,7 +707,7 @@ class tx_kestats_lib {
 	 * @access public
 	 * @return void
 	 */
-	function debugMail($email='', $content='', $subject = 'TYPO3 tx_kestats_lib DEBUG') {
+	function debugMail($email='', $content='', $subject = 'TYPO3 tx_kestats_lib DEBUG') {/* {{{ */
 		if (is_array($content)) {
 			$content = t3lib_div::view_array($content);
 		}
@@ -700,6 +718,8 @@ class tx_kestats_lib {
 
 		mail($email, $subject, $content, $header);
 	}
+
+	/* }}} */
 }
 
 ?>

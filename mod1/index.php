@@ -1452,6 +1452,13 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 									$formatted_data = substr($formatted_data,0,$this->maxLengthTableContent).'...';
 								}
 							}
+							// hook for individual modifications of the description col
+							if(is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyDescriptionColOfTable'])) {
+								foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyDescriptionColOfTable'] as $_classRef) {
+									$_procObj = &t3lib_div::getUserObj($_classRef);
+									$_procObj->modifyDescriptionColOfTable($dataRow, $formatted_data, $special, $this);
+								}
+							}							
 							$this->addCsvCol(strip_tags($formatted_data));
 						} else {
 							// print the data

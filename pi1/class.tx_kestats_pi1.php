@@ -101,6 +101,12 @@ class tx_kestats_pi1 extends tslib_pibase {
 			&& $_SERVER['SERVER_ADDR'] == t3lib_div::getIndpEnv('REMOTE_ADDR')) {
 			return '';
 		}
+		
+			// another check to ignore ajax calls
+		if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+		   && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+			return '';
+		}
 
 			// get the general data
 		$this->getData();

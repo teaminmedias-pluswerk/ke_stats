@@ -702,9 +702,15 @@ class tx_kestats_pi1 extends tslib_pibase {
 				$charset = strtoupper(substr($query_arr[$i],3,strlen($query_arr[$i])));
 			}
 		}
-		if($charset == "UTF-8") {
-			$keywords = utf8_decode($keys);
-		}
+		
+		$keywords = utf8_decode($keys);
+		
+		// This is obsolete, keeping it in the code (commented) since I didn't test with
+		// non-UTF-8 sites
+		//if($charset == "UTF-8") {
+			//$keywords = utf8_decode($keys);
+		//}
+		
 		$trans = array (':' => "", '"' => "", "'" => "", "<" => "", ">" => "", " -" => "", "(" => "", ")" => "", "~" => "", "*" => "");
 		return strtr($keywords, $trans);
 	}

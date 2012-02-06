@@ -418,7 +418,6 @@ class tx_kestats_lib {
 							// table (this will be at least element_title and column)
 							if (!$element_already_counted) {
 								$lineCounter++;
-								// UTF-8 for search words
 								if (strtolower($GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset']) == 'utf-8' && $encode_title_to_utf8) {
 									$row['element_title'] = utf8_encode($row['element_title']);
 								}

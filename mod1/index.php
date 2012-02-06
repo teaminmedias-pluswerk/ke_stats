@@ -936,7 +936,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 									case CATEGORY_SEARCH_STRINGS:
 										$content .= $this->renderSelectorMenu(STAT_TYPE_PAGES,CATEGORY_SEARCH_STRINGS);
 										$columns = 'element_title,counter';
-										$resultArray = $this->getStatResults(STAT_TYPE_PAGES,CATEGORY_SEARCH_STRINGS,$columns,STAT_COMPLETE_LIST,'counter DESC','',1);
+										$resultArray = $this->getStatResults(STAT_TYPE_PAGES,CATEGORY_SEARCH_STRINGS,$columns,STAT_COMPLETE_LIST,'counter DESC');
 										$content .= $this->renderTable($GLOBALS['LANG']->getLL('type_pages_referers_searchwords'),$columns,$resultArray,'none');
 									break;
 								}

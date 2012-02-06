@@ -288,7 +288,7 @@ class tx_kestats_lib {
 			foreach ($monthArray as $month => $daysPerMonth) {
 
 				// if we are dealing with data of a month in the past, we may use the cache
-				if ($year < date('Y') || ($year == date('Y') && $month < date('m'))) {
+				if ($year < date('Y') || ($year == date('Y') && $month > 0 && $month < date('m'))) {
 					$useCache = true;
 				} else {
 					$useCache = false;
@@ -311,7 +311,7 @@ class tx_kestats_lib {
 				if ($element_type >= 0) {
 					$where_clause .= ' AND element_type=' . $element_type;
 				}
-
+				
 				// the query to filter the elements based on the selected page in the pagetree
 				// extension elements are filtered by their pid
 				if (strlen($this->pagelist) > 0) {
@@ -324,7 +324,7 @@ class tx_kestats_lib {
 					$subpages_query = '';
 				}
 				$where_clause .= $subpages_query;
-
+				
 				// hook for custom db query
 				if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['getStatResultsDBQuery'])) {
 					foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['getStatResultsDBQuery'] as $_classRef) {
@@ -357,6 +357,7 @@ class tx_kestats_lib {
 						$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', 'tx_kestats_statdata', $where_clause, $groupBy, $orderBy);
 
 						// write the result to the cache
+						// do this only if a month and a year has been selected
 						if (count($rows) && $this->extConf['enableBackendModuleCaching']) {
 							$result = t3lib_div::array2xml($rows);
 

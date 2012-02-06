@@ -706,7 +706,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 			// render only months for which data exists
 		$monthArray = array();
-		$monthArray[-1] = 'Alle Monate';
+		$monthArray[-1] = $GLOBALS['LANG']->getLL('month_all');
 		$this->allowedMonths = array();
 		$this->allowedMonths[] = -1;
 		for ($month = 1; $month<=12; $month++) {

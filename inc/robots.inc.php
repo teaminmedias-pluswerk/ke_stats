@@ -181,6 +181,8 @@ $GLOBALS['robots'] = array(/*{{{*/
 	'Xerka WebBot' => 'Xerka WebBot',
 	'Twitterbot' => 'Twitterbot',
 	'SheenBot/' => 'SheenBot',
-	'bingbot' => 'Bingbot'
+	'bingbot' => 'Bingbot',
+	'Mozilla/5.0 (compatible; mon.itor.us - free monitoring service;' => 'mon.itor.us',
+	'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' => 'facebook external hit'
 );/*}}}*/
 ?>

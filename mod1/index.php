@@ -229,6 +229,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 								case "9": output = \'' . $this->overviewPageData['pageviews_and_visits'][9]['element_title'] . '\'; break;
 								case "10": output = \'' . $this->overviewPageData['pageviews_and_visits'][10]['element_title'] . '\'; break;
 								case "11": output = \'' . $this->overviewPageData['pageviews_and_visits'][11]['element_title'] . '\'; break;
+								case "12": output = \'' . $this->overviewPageData['pageviews_and_visits'][12]['element_title'] . '\'; break;
 							}
 							return output;
 						}
@@ -238,7 +239,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 					// Pageviews
 				$this->doc->JScode .= 'var pageviews = [';
 				$flotrDataArray = array();
-				for ($i = 0; $i<12 ; $i++) {
+				for ($i = 0; $i<13 ; $i++) {
 					$flotrDataArray[$i] = '[' . $i . ', ' . $this->overviewPageData['pageviews_and_visits'][$i]['pageviews'] . ']';
 				}
 				$this->doc->JScode .= implode(',', $flotrDataArray);
@@ -247,7 +248,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 					// Visits
 				$this->doc->JScode .= 'var visits = [';
 				$flotrDataArray = array();
-				for ($i = 0; $i<12 ; $i++) {
+				for ($i = 0; $i<13 ; $i++) {
 					$flotrDataArray[$i] = '[' . $i . ', ' . $this->overviewPageData['pageviews_and_visits'][$i]['visits'] . ']';
 				}
 				$this->doc->JScode .= implode(',', $flotrDataArray);
@@ -706,7 +707,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 			// render only months for which data exists
 		$monthArray = array();
-		$monthArray[-1] = $GLOBALS['LANG']->getLL('month_all');
+		$monthArray[-1] = 'Alle Monate';
 		$this->allowedMonths = array();
 		$this->allowedMonths[] = -1;
 		for ($month = 1; $month<=12; $month++) {

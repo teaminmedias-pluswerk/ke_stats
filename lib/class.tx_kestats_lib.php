@@ -177,11 +177,11 @@ class tx_kestats_lib {
 		if ($pageUid) {
 			$startTime = t3lib_div::milliseconds();
 
-			// in the overview page we display 12 month
+			// in the overview page we display 13 month
 			$fromToArray['from_year'] = date('Y') - 1;
 			$fromToArray['to_year'] = date('Y');
 			$fromToArray['from_month'] = date('n');
-			$fromToArray['to_month'] = date('n') - 1;
+			$fromToArray['to_month'] = date('n');
 
 			// monthly process of pageviews
 			$columns = 'element_title,counter';

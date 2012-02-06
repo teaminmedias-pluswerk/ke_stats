@@ -703,7 +703,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 			}
 		}
 		
-		$keywords = utf8_decode($keys);
+		$keywords = $keys;
 		
 		// This is obsolete, keeping it in the code (commented) since I didn't test with
 		// non-UTF-8 sites

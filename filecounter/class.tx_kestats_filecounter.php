@@ -24,8 +24,8 @@
 
 class tx_kestats_filecounter {
 	public $messages = array(
-		'backend_tabname' => 'downloads',
-		'file_not_found' => 'File not found'
+		'backend_tabname' => 'Downloads',
+		'file_not_found' => 'File not found: '
 	);
 
 	/**
@@ -64,17 +64,12 @@ class tx_kestats_filecounter {
 			// Create $TSFE object (TSFE = TypoScript Front End)
 			// Connecting to database
 			// ***********************************
-		$temp_TSFEclassName = t3lib_div::makeInstanceClassName('tslib_fe');
-		$TSFE = new $temp_TSFEclassName(
-			$TYPO3_CONF_VARS,
-			t3lib_div::_GP('id'),
-			t3lib_div::_GP('type'),
-			t3lib_div::_GP('no_cache'),
-			t3lib_div::_GP('cHash'),
-			t3lib_div::_GP('jumpurl'),
-			t3lib_div::_GP('MP'),
-			t3lib_div::_GP('RDCT')
-		);
+			
+		$TYPO3_CONF_VARS = array();
+		$id = intval(t3lib_div::_GP('id'));
+		$type = intval(t3lib_div::_GP('type'));
+		$no_cache = intval(t3lib_div::_GP('no_cache'));
+		$TSFE = t3lib_div::makeInstance('tslib_fe', $TYPO3_CONF_VARS, $id, $type, $no_cache);
 
 			// initialize the database
 		$TSFE->connectToDB();
@@ -109,9 +104,7 @@ class tx_kestats_filecounter {
 
 		// get fileinfomations if possible
 		if($fileinfo = $this->getFileInfo($file)) {
-			t3lib_div::devlog('fi', 'fi', -1, array(
-				$fileinfo
-			));
+			
 			// Must be set in order to use ke_stats
 			$GLOBALS['TSFE']->config['config']['language'] = 0;
 
@@ -158,20 +151,20 @@ class tx_kestats_filecounter {
 				}
 				unset($keStatsObj);
 			}
-
+			
 			header('HTTP/1.1 200 OK');
 			header('Status: 200 OK');
 
 			// Download Bug IE SSL
 			header('Pragma: anytextexeptno-cache', true);
 
-			header('Content-Type: application/' . $fileextension);
-			header('Content-Disposition: inline; filename="' . $filename . '"');
+			header('Content-Type: application/' . $fileinfo['fileext']);
+			header('Content-Disposition: inline; filename="' . $fileinfo['file'] . '"');
 
 			readfile($file);
 		} else {
 			header("HTTP/1.0 404 Not Found");
-			echo $this->messages['file_not_found'];
+			echo $this->messages['file_not_found'] . $file;
 		}
     }
 

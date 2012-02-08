@@ -261,6 +261,17 @@ class backendMenu {
 	border-bottom: none;
 	background-color: #E2E2E9;
 	color: #2d2b2b;
+	
+	-moz-border-radius-topleft: 3px;
+	-moz-border-radius-topright: 3px;
+	-moz-border-radius-bottomright: 0px;
+	-moz-border-radius-bottomleft: 0px;
+	-webkit-border-radius: 3px 3px 0px 0px;
+	border-radius: 3px 3px 0px 0px;
+	
+	-webkit-box-shadow: inset 0px 1px 0px 0px #ffffff;
+	-moz-box-shadow: inset 0px 1px 0px 0px #ffffff;
+	box-shadow: inset 0px 1px 0px 0px #ffffff; 
 }
 
 .basictab li a:visited {
@@ -269,6 +280,7 @@ class backendMenu {
 
 .basictab li a:hover {
 	background-color: #B7B7CC;
+
 	color: black;
 }
 
@@ -281,6 +293,7 @@ class backendMenu {
 	top: 1px;
 	padding-top: 4px;
 	background-color: #B7B7CC;
+
 	color: black;
 }';
 	}/*}}}*/

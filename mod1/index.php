@@ -1646,13 +1646,24 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 */
 	function getTableCSS() {
 		return '
+	body#ext-ke-stats-mod1-index-php{
+		padding:10px;
+	}
 
-.extensiontitle {
-	color: #7F7F7F;
-	font-weight:bold;
-	font-style:italic;
-	float:right;
-}
+	.extensiontitle {
+		padding:17px 0 8px 0;
+		margin:0 0 10px 0;
+		color: #555555;
+		font-size: 12px;
+		line-height: 14px;
+		font-weight:bold;
+		border-bottom: 1px solid #CDCDCD;
+		clear:both;
+	}
+	.extensiontitle img{
+		float:left;
+		margin:0 6px 0 0;
+	}
 
 .buttonlink {
 	float:left;
@@ -1701,7 +1712,7 @@ table.ke-stats-table thead th,
 table.ke-stats-table tfoot th,
 table.ke-stats-table tfoot td {
 	background-color: #B7B7CC;
-	color: #FFF;
+	color: #414141;
 	font-weight: bold;
 	text-transform: uppercase;
 }

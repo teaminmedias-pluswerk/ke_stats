@@ -413,7 +413,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 		}
 
 		if ($this->debug_mail_queries) {
-			$this->debugMail($this->debug_queries);
+			$this->debugMail($this->debug_queries, '[ke_stats] Queries');
 		}
 
 		$this->trackTime('end');
@@ -734,7 +734,11 @@ class tx_kestats_pi1 extends tslib_pibase {
 	function debugMail($content='',$subject = 'TYPO3 Debug Mail') {
 		if ($this->debug_email) {
 			if (is_array($content)) {
-				$content = t3lib_div::view_array($content);
+				if ($this->getNumericTYPO3versionNumber() >= 6000000) {
+					$content = TYPO3\CMS\Core\Utility\DebugUtility::viewArray($content);
+				} else {
+					$content = t3lib_div::view_array($content);
+				}
 			}
 
 			$header = "MIME-Version: 1.0\n";
@@ -785,6 +789,22 @@ class tx_kestats_pi1 extends tslib_pibase {
 		}
 		return $str;
 	}
+
+    /**
+     * Returns the current TYPO3 version number as an integer, eg. 4005000 for version 4.5
+     *
+     * @return int
+     */
+    public function getNumericTYPO3versionNumber() {
+        if (class_exists(VersionNumberUtility)) {
+            $numeric_typo3_version = \TYPO3\CMS\Core\Utility\VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
+        } else if (class_exists('t3lib_utility_VersionNumber')) {
+            $numeric_typo3_version = t3lib_utility_VersionNumber::convertVersionNumberToInteger(TYPO3_version);
+        } else {
+            $numeric_typo3_version = t3lib_div::int_from_ver(TYPO3_version);
+        }
+        return $numeric_typo3_version;
+    }
 }
 
 

@@ -680,29 +680,6 @@ class tx_kestats_lib {
 		}
 		return $result;
 	}
-
-	/**
-	 * debugMail
-	 *
-	 * Sends a html mail with debug information
-	 *
-	 * @param string $email
-	 * @param string $content
-	 * @param string $subject
-	 * @access public
-	 * @return void
-	 */
-	function debugMail($email='', $content='', $subject = 'TYPO3 tx_kestats_lib DEBUG') {
-		if (is_array($content)) {
-			$content = t3lib_div::view_array($content);
-		}
-
-		$header = "MIME-Version: 1.0\n";
-		$header .= "Content-type: text/html; charset=utf-8\n";
-		$header .= "From: ke_stats DEBUG\n";
-
-		mail($email, $subject, $content, $header);
-	}
 }
 
 ?>

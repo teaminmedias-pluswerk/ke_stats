@@ -796,7 +796,7 @@ class tx_kestats_pi1 extends tslib_pibase {
      * @return int
      */
     public function getNumericTYPO3versionNumber() {
-        if (class_exists(VersionNumberUtility)) {
+        if (class_exists('VersionNumberUtility')) {
             $numeric_typo3_version = \TYPO3\CMS\Core\Utility\VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
         } else if (class_exists('t3lib_utility_VersionNumber')) {
             $numeric_typo3_version = t3lib_utility_VersionNumber::convertVersionNumberToInteger(TYPO3_version);

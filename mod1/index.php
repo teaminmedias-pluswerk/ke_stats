@@ -190,7 +190,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				// Init tab menus
 			$this->tabmenu->initMenu('type','overview');
 			$now = time();
-			$this->tabmenu->initMenu('month',-1);
+			$this->tabmenu->initMenu('month',date('m',$now));
 			$this->tabmenu->initMenu('year',date('Y',$now));
 			$this->tabmenu->initMenu('element_language',-1);
 			$this->tabmenu->initMenu('element_type',-1);

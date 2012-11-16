@@ -24,3 +24,6 @@ logfileDir =
 
 # cat=basic//130; type=text; label= Page where to count file accesses: If you use ke_stats to count file accesses, the date will be written to the page uid you define here.
 fileAccessCountOnPage =
+
+# cat=basic//140; type=int; label= How many rows should be displayed for each kind of view?
+maxAmountOfRowsInView = 1000

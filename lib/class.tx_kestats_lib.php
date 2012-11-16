@@ -55,6 +55,9 @@ class tx_kestats_lib {
 		if (!isset($this->extConf['enableBackendModuleCaching'])) {
 			$this->extConf['enableBackendModuleCaching'] = 1;
 		}
+		if (empty($this->extConf['maxAmountOfRowsInView'])) {
+			$this->extConf['maxAmountOfRowsInView'] = 1000;
+		}
 		$this->extConf['enableBackendModuleCaching'] = $this->extConf['enableBackendModuleCaching'] ? 1 : 0;
 	}
 
@@ -101,7 +104,7 @@ class tx_kestats_lib {
 				);
 			}
 		}
-		
+
 		// if asynchronous data refreshing is activated, store the the data
 		// which should be counted at this point into a queue table. If not,
 		// process the data (update the counter).
@@ -148,7 +151,7 @@ class tx_kestats_lib {
 		}
 	}
 
-	
+
 	/**
 	 * refreshOverviewPageData
 	 *
@@ -306,7 +309,7 @@ class tx_kestats_lib {
 				if ($element_type >= 0) {
 					$where_clause .= ' AND element_type=' . $element_type;
 				}
-				
+
 				// the query to filter the elements based on the selected page in the pagetree
 				// extension elements are filtered by their pid
 				if (strlen($this->pagelist) > 0) {
@@ -319,7 +322,7 @@ class tx_kestats_lib {
 					$subpages_query = '';
 				}
 				$where_clause .= $subpages_query;
-				
+
 				// hook for custom db query
 				if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['getStatResultsDBQuery'])) {
 					foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['getStatResultsDBQuery'] as $_classRef) {
@@ -349,7 +352,7 @@ class tx_kestats_lib {
 						unset($cacheRow);
 					} else {
 
-						$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', 'tx_kestats_statdata', $where_clause, $groupBy, $orderBy);
+						$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', 'tx_kestats_statdata', $where_clause, $groupBy, $orderBy, $this->extConf['maxAmountOfRowsInView']);
 
 						// write the result to the cache
 						// do this only if a month and a year has been selected
@@ -368,7 +371,7 @@ class tx_kestats_lib {
 				}
 
 				if (!$useCache) {
-					$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', 'tx_kestats_statdata', $where_clause, $groupBy, $orderBy);
+					$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', 'tx_kestats_statdata', $where_clause, $groupBy, $orderBy, $this->extConf['maxAmountOfRowsInView']);
 				}
 
 				$sum = 0;

@@ -438,6 +438,24 @@ class tx_kestats_lib {
 			}
 		}
 
+		// after manual grouping we have to sort the array again
+		$orderParts = t3lib_div::trimExplode(' ', $orderBy);
+		if (!isset($orderParts[1])) {
+			$orderParts[1] = 'DESC';
+		}
+		// we need this for array_multisort
+		if ($orderParts[1] == 'ASC') {
+			$orderParts[1] = SORT_ASC;
+		} else $orderParts[1] = SORT_DESC;
+
+		$col = array();
+		foreach ($resultArray as $key => $row) {
+			$col[$key] = $row[$orderParts[0]];
+		}
+
+		// now we can resort our array
+		array_multisort($col, $orderParts[1], SORT_NUMERIC, $resultArray);
+
 		return $resultArray;
 	}
 

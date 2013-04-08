@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<T3locallang>
+	<meta type="array">
+		<type>module</type>
+		<description>Language labels for cronjob of extension 'ke_stats'</description>
+	</meta>
+	<data type="array">
+		<languageKey index="default" type="array">
+			<!-- labels for the scheduler-form -->
+			<label index="ScFormMaxExecTime">Maximum execution time (ms) (default: 90000)</label>
+		</languageKey>
+		<languageKey index="de" type="array">
+			<!-- labels for the scheduler-form -->
+			<label index="ScFormMaxExecTime">Maximale Laufzeit in ms (Standard: 90000)</label>
+		</languageKey>
+	</data>
+</T3locallang>

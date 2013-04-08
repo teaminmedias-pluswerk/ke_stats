@@ -1,1 +1,143 @@
-For Changelog see manual in doc/ directory.
+Current Trunk
+* New feature: scheduler task. Thanks to Jonathan Heilmann.
+* New feature: added a changeable limitation of rows to show for each kind of view. Defaults to 1000.
+* added dependency in ext_emconf.php PHP 5.3.
+* little behaviour change: Now the current month ist pre-selected when entering the single month view, not the whole year (“all months”).
+* bugfix: After manual grouping of the resultset we have to resort our array.
+* moved changelog to "Changelog" file in the extension folder instead of keeping it in doc/manual.sxw.
+
+Version 1.1.1 (2012/10)
+* made ke_stats compatible with TYPO3 6.0
+
+Version 1.1.0 (2012/02)
+* Update ist recommended since users with firefox 8 and above are not counted in versions before!
+* added new robots and browsers. firefox version 5 and above is now counted as one browser. Future versions of firefox will automatically be recognized.
+* Design: Backend module layout improvements.
+* Overview now page shows the past 12 months plus the current month. Formally it showed only the last 12 months.
+* Bufix: made be module compatible with version 4.6, removed call to t3lib_div::fixed_lgd_pre.
+* Bugfix: made filecounter compatible with version 4.6. Changed backend tab name to “Downloads” instead of “downloads”.
+* Bugfix: searchwords work now with UTF-8 sites. Thanks to Fabio Baer.
+* added a new hook to modify the description col of the result table: modifyDescriptionColOfTable
+* now you can choose "all months" in selectbox
+* filecounter rewritten. Now we used some more arrays and TYPO3-API. 3 new functions. 2 new hooks in filecounter:
+* modifyPathArray: Explodes the current path into directories. This is useful, when you want to save directory names like "DE", "EN", ... into db
+* modifyFileDataBeforeQueue
+
+Version 1.0.0 (2011/04)
+* switched version number to 1.0.0. No other changes.
+
+Version 0.6.4 (2011/04)
+* new configuration option: Use Caching in backend module.
+* Switched status to stable
+* new icon and backend module title
+
+Version 0.6.3 (2011/03)
+* new user agent strings (firefox 4, ipod and more)
+
+Version 0.6.2 (2011/03)
+* bugfix: date was missing in live tracking (backend module)
+
+Version 0.6.1 (2011/03) 
+* Bugfix: Elements in different languages have been treated as the same element if they had the same title. Thanks to Mark Herzberg.
+* Improvement: Don't count file accesses from robots.
+
+Version 0.6.0 (2010/11) 
+* new feature: counter can be increased by numbers other than 1. This is currently only possible if you call the “increaseCounter” function via hook.
+* New feature: Count file accesses.
+* Bugfix: Bug #10398: moved userTSconfig to pageTSconfig. See http://forge.typo3.org/issues/10398. Thanks to Simon Schick.
+* Bugfix: Bug #10715: Add quotes to UPDATED_UNTIL_DATEFORMAT constant declaration. See http://forge.typo3.org/issues/10715. Thanks to Richard Bausek.
+
+Version 0.5.2 (2010/06)
+* changed hook calls in backend module to eleminate error "Call-time pass-by-reference has been deprecated" 
+
+Version 0.5.1 (2010/06)
+* changed hook calls to eleminate error "Call-time pass-by-reference has been deprecated"
+
+Version 0.5.0 (2010/06)
+* added hooks
+* added browsers: Chrome, IE 9, iPad, iPhone
+* added os: Windows 7
+* added search engine: search.ch
+
+Version 0.4.0 (2010/05)
+* Removed generic browser identification strings from list of browsers. That means a user agent identifying itself as “Mozilla/5.0” (or 4.0 or 3.0) will now be counted as robot, not as a human visitor. This fix leads to more exact numbers of visitors. But it also changes the behaviour of ke_stats. Please notice that numbers from before and and after version 0.4.0 are not directly comparable. You may compare them if you substract the numbers of “Mozilla 5 compatible”, “Mozilla 4 compatible” and “Mozilla 3 compatible” in the “browsers” section from the pageviews in versions below 0.4.0.
+* new feature: log file writing (can be activated in extension manager). Mainly for debugging purposes.
+* added some new robots.
+* Integrated french translation, thanks to Nicolas Liaudat.
+
+Version 0.3.1 (2009/10)
+* bugfix: ipfilter feature was accidently dropped in 0.3.0
+
+Version 0.3.0 (2009/10)
+* little bugfix: fixed path to flotr lib, thanks to Christoph Werner 
+* new feature: ignoreRobots. May be set in extension manager. Ignores Robots and saves database space.
+* performance optimization: getOldestQueueEntry is a lot faster now (used in asynchronous data refreshing).
+* optimization: slightly improved layout (css) for result tables in backend module.
+* added some new robots.
+* optimization: added check for valid entries in cli script.
+* important bugfix: Treat unknown user agents as robots. Otherwise all pageviews from unknown user agents are counted as pageviews from human visitors, which is not true and gives false results. The number of false counts is identical to the number of entries titled "unknown" in the "browsers" table. By subtracting this number from your pageviews number, you have the correct number of pageviews.
+* New robot (google search appliance).
+* little bugfix: changed ext_tables.sql so that extension manager does not want to change database all the time …
+* removed time information in overview page (makes no sense here since it is no updated asynchronously).
+* little change in debugEmail: don't send E-Mail if no recipient is given.
+
+Version 0.2 (2009/07)
+* new overview page, finally with chart rendering.
+* corrected db-calls, using TYPO3_DB::fullQuoteString in Backend Module now, thanks to Pierrick Caillon.
+* new feature: API.
+* new feature: asynchronousDataRefreshing improves performance.
+* new feature: ip filtering.
+* index for the cache table improves performance.
+* new search engines.
+* tracking tab is now hidden if tracking is deactivated.
+* some functions are now in a new library for backend and frontend use.
+
+Version 0.1.10 (2009/06)
+* some minor code changes to increase compatibility with postgreSQL, thanks to Michael Greiner.
+* Out-of-the-box support for ke_troubletickets, ke_yac, and commerce.
+* new search engines and robots.
+* Backend module: Tab “Live Tracking” is now hidden if tracking is disabled.
+* Bugfix: Statistic was not disabled for backend users visiting frontend pages. Now nothing is counted if a backend user is logged in. Configurable in the extension manager (ignoreBackendUsers).
+
+Version 0.1.9 (2008/08)
+* fixed bug: Searchwords from google searches are counted correctly now. 
+
+Version 0.1.8 (2008/08)
+* fixed bug: Enabling Tracking was not possible. Configuration option now moved to the extension manager (same as “enable IP-Logging”).
+
+Version 0.1.7 (2008/07)
+* fixed problem with csv-download when backend charset was not utf-8
+
+Version 0.1.6 (2008/07)
+* CSV-Download (new backend module tab)
+* Caching for the backend module (improved performance).
+* Tracking is disabled by default in order to improve performance.
+
+Version 0.1.5 (2008/07)
+* New user agents.
+
+Version 0.1.4 (2008/06)
+* IP-Logging is now disabled by default for legal reasons. If you want to delete older IP-Log entries, use this SQL-Command (in phpMyAdmin): DELETE FROM `tx_kestats_statdata` WHERE category LIKE "ip%"
+* Fixed small bug in backend module: links in statistic tables did not work correctly.
+
+Version 0.1.3 (2008/05)
+* important security fix.
+
+Version 0.1.2 (2008/03)
+* fixed foreach-error appearing with TYPO3 4.1.6
+* added userTSconfig so that the statistical data does not appear in the list module
+* add a few new bots
+
+Version 0.1.1 (2008/02)
+* fixed two years statistics bug (bad statistic since 1. january ...)
+
+Version 0.1.0 (2007/10)
+* Visitors now also appear in the detailed statistic per month. So you can see how many visitors you have per day.
+* Pagetype and language appear in the detailled list. 
+* Bug fixed: Dropdown menus for type and language did not function properly.
+* Results may now be filtered by selecting a page in the pagetree. Because of this new feature, you won't see any  statistical data from the past anymore when you update from version 0.0.1. Exception is the “page” statistic, which remains intact. Unfortunately, this new feature will also blow up the necessary database space. The table should be observed if it grows way too big on heavy load websites.
+* added database index for speed optimization.
+* changed status to beta.
+
+Version 0.0.1 (2007/05)
+* initial uploadFor Changelog see manual in doc/ directory.

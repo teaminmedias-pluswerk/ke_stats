@@ -32,7 +32,7 @@
  */
 class tx_kestats_updatedb extends tx_scheduler_Task {
 	public function execute() {
-		$extKey = 'tx_kestats';
+		$extKey = 'ke_stats';
 			// include the shared library
 		require_once(t3lib_extMgm::extPath("ke_stats",'lib/class.tx_kestats_lib.php'));
 		//require_once($kestats_dir.'/lib/class.tx_kestats_lib.php');
@@ -93,6 +93,14 @@ class tx_kestats_updatedb extends tx_scheduler_Task {
 /*$output =  'Processed ' . $counter . ' entries in ' . ($runningTime / 1000) . ' seconds.' . ' ';
 $output .=  'Ignored ' . $counter_invalid . ' invalid entries.';
 t3lib_utility_Debug::debug($output);*/
+
+			//truncate table to reclaim ununsed space in database table if all rows has been processed (table is empty)
+		if($GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', 'tx_kestats_queue') == 0) {
+			$GLOBALS['TYPO3_DB']->exec_TRUNCATEquery('tx_kestats_queue');
+		} else {
+			$GLOBALS['BE_USER']->simplelog('Could not truncate database table \'tx_kestats_queue\'. Maybe you need to run the scheduler task more often.', $extKey, 2);
+			return false;
+		}
 
 		return true;
 	}

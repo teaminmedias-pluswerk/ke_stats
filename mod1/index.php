@@ -1001,22 +1001,22 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 						switch($this->tabmenu->getSelectedValue('list_type_category_monthly')) {
 							case 'category_monthly_pages':
 								$columns = 'element_title,counter';
-								$resultArray = $this->getStatResults(STAT_TYPE_PAGES,CATEGORY_PAGES,$columns,STAT_ONLY_SUM);
+								$resultArray = $this->getStatResults(STAT_TYPE_PAGES,CATEGORY_PAGES,$columns,STAT_ONLY_SUM,'element_title');
 								$content .= $this->renderTable($GLOBALS['LANG']->getLL('type_pages_monthly'),$columns,$resultArray,'no_line_numbers','counter','');
 							break;
 							case 'category_monthly_pages_fe_users':
 								$columns = 'element_title,counter';
-								$resultArray = $this->getStatResults(STAT_TYPE_PAGES,CATEGORY_PAGES_FEUSERS,$columns,STAT_ONLY_SUM);
+								$resultArray = $this->getStatResults(STAT_TYPE_PAGES,CATEGORY_PAGES_FEUSERS,$columns,STAT_ONLY_SUM,'element_title');
 								$content .= $this->renderTable($GLOBALS['LANG']->getLL('type_pages_monthly_fe_users'),$columns,$resultArray,'no_line_numbers','counter','');
 							break;
 							case 'category_monthly_visits':
 								$columns = 'element_title,counter';
-								$resultArray = $this->getStatResults(STAT_TYPE_PAGES,CATEGORY_VISITS_OVERALL,$columns,STAT_ONLY_SUM);
+								$resultArray = $this->getStatResults(STAT_TYPE_PAGES,CATEGORY_VISITS_OVERALL,$columns,STAT_ONLY_SUM,'element_title');
 								$content .= $this->renderTable($GLOBALS['LANG']->getLL('type_pages_visits_monthly'),$columns,$resultArray,'no_line_numbers','counter','');
 							break;
 							case 'category_monthly_visits_fe_users':
 								$columns = 'element_title,counter';
-								$resultArray = $this->getStatResults(STAT_TYPE_PAGES,CATEGORY_VISITS_OVERALL_FEUSERS,$columns,STAT_ONLY_SUM);
+								$resultArray = $this->getStatResults(STAT_TYPE_PAGES,CATEGORY_VISITS_OVERALL_FEUSERS,$columns,STAT_ONLY_SUM,'element_title');
 								$content .= $this->renderTable($GLOBALS['LANG']->getLL('type_pages_visits_monthly_fe_users'),$columns,$resultArray,'no_line_numbers','counter','');
 							break;
 						}
@@ -1459,7 +1459,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 									$_procObj = &t3lib_div::getUserObj($_classRef);
 									$_procObj->modifyDescriptionColOfTable($dataRow, $formatted_data, $special, $this);
 								}
-							}							
+							}
 							$this->addCsvCol(strip_tags($formatted_data));
 						} else {
 							// print the data

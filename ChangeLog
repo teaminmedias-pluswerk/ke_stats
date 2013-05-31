@@ -5,6 +5,7 @@ Current Trunk
 * little behaviour change: Now the current month ist pre-selected when entering the single month view, not the whole year (“all months”).
 * bugfix: After manual grouping of the resultset we have to resort our array.
 * moved changelog to "Changelog" file in the extension folder instead of keeping it in doc/manual.sxw.
+* bugfix: fixed ordering in result table. Thanks to Jonathan Heilmann.
 
 Version 1.1.1 (2012/10)
 * made ke_stats compatible with TYPO3 6.0

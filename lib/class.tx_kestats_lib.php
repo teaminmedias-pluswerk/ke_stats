@@ -264,17 +264,17 @@ class tx_kestats_lib {
 	/**
 	 * Returns an array with statistical data of a certain time period.
 	 *
-	 * @param string $statType: type of the statistic. default ist pages, but may also be for example an extension key.
-	 * @param string $statCategory: category, used to determine further differences with in the statistic type
-	 * @param string $indexField: field, which makes up the index, should be unique
-	 * @param string $columns: fields to display in the list
-	 * @param string $groupBy: group fields (commalist of database field names)
-	 * @param string $encode_title_to_utf8: set to 1 if the title in the result table has to be encoded to utf-8. The function checks for itself, if the backend is set to utf-8 and only then encodes the value.
-	 * @param int $onlySum: display only the sum of each month or the whole list for a certain time period (which is normally a single month)?
-	 * @param array $fromToArray: contains the time period for which the statistical data shoud be generated (year and month from and to). If empty, it will be populated automatically within the function.
-	 * @param int $element_language
-	 * @param int $element_type
-	 * @return array
+	 * @param 	string 	$statType: type of the statistic. default ist pages, but may also be for example an extension key.
+	 * @param 	string 	$statCategory: category, used to determine further differences with in the statistic type
+	 * @param 	string 	$columns: fields to display in the list
+	 * @param 	int 		$onlySum: display only the sum of each month or the whole list for a certain time period (which is normally a single month)?
+	 * @param 	string 	$orderBy: ($indexField:) field, which makes up the index, should be unique
+	 * @param 	string 	$groupBy: group fields (commalist of database field names)
+	 * @param 	string 	$encode_title_to_utf8: set to 1 if the title in the result table has to be encoded to utf-8. The function checks for itself, if the backend is set to utf-8 and only then encodes the value.
+	 * @param 	array 	$fromToArray: contains the time period for which the statistical data shoud be generated (year and month from and to). If empty, it will be populated automatically within the function.
+	 * @param 	int 		$element_language
+	 * @param 	int 		$element_type
+	 * @return 	array
 	 */
 	function getStatResults($statType='pages', $statCategory, $columns, $onlySum=0, $orderBy='counter DESC', $groupBy='', $encode_title_to_utf8=0, $fromToArray=array(), $element_language=0, $element_type=0) {
 		$resultArray = array();
@@ -438,23 +438,27 @@ class tx_kestats_lib {
 			}
 		}
 
-		// after manual grouping we have to sort the array again
+
 		$orderParts = t3lib_div::trimExplode(' ', $orderBy);
-		if (!isset($orderParts[1])) {
-			$orderParts[1] = 'DESC';
-		}
-		// we need this for array_multisort
-		if ($orderParts[1] == 'ASC') {
-			$orderParts[1] = SORT_ASC;
-		} else $orderParts[1] = SORT_DESC;
+		// after manual grouping we have to sort the array again
+		// but only if $orderBy is set to 'counter' AND $statCategory is not set to a constant of the overview-page
+		if($orderParts[0] == 'counter' && $statCategory != CATEGORY_PAGES && $statCategory != CATEGORY_VISITS_OVERALL) {
+			switch($orderParts[1]) {
+				case 'ASC':
+					$orderParts[1] = SORT_ASC;
+					break;
+				default:
+					$orderParts[1] = SORT_DESC;
+			}
 
-		$col = array();
-		foreach ($resultArray as $key => $row) {
-			$col[$key] = $row[$orderParts[0]];
-		}
+			$col = array();
+			foreach ($resultArray as $key => $row) {
+				$col[$key] = $row[$orderParts[0]];
+			}
 
-		// now we can resort our array
-		array_multisort($col, $orderParts[1], SORT_NUMERIC, $resultArray);
+			// now we can resort our array
+			array_multisort($col, $orderParts[1], SORT_NUMERIC, $resultArray);
+		}
 
 		return $resultArray;
 	}

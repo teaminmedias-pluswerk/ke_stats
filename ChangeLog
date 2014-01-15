@@ -1,4 +1,5 @@
 Current Trunk
+* security fix! please update!
 * New feature: scheduler task. Thanks to Jonathan Heilmann.
 * New feature: added a changeable limitation of rows to show for each kind of view. Defaults to 1000.
 * added dependency in ext_emconf.php PHP 5.3.
@@ -6,6 +7,10 @@ Current Trunk
 * bugfix: After manual grouping of the resultset we have to resort our array.
 * moved changelog to "Changelog" file in the extension folder instead of keeping it in doc/manual.sxw.
 * bugfix: fixed ordering in result table. Thanks to Jonathan Heilmann.
+* task: updated browsers (Internet Explorer 11) and robots list
+
+Version 1.1.2 (2013/12)
+* security fix: please update
 
 Version 1.1.1 (2012/10)
 * made ke_stats compatible with TYPO3 6.0

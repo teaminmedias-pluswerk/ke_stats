@@ -381,9 +381,9 @@ class tx_kestats_pi1 extends tslib_pibase {
 					// get the element uid
 					if (!empty($extConf['uidParameterWrap'])) {
 						$extPiVars = t3lib_div::_GET($extConf['uidParameterWrap']);
-						$element_uid = $extPiVars[$extConf['uidParameter']];
+						$element_uid = intval($extPiVars[$extConf['uidParameter']]);
 					} else {
-						$element_uid = t3lib_div::_GET($extConf['uidParameter']);
+						$element_uid = intval(t3lib_div::_GET($extConf['uidParameter']));
 					}
 
 						// count this element if a single view uid is given

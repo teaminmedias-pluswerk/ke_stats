@@ -31,6 +31,7 @@
 // List of robots (HTTP_USER_AGENTS)
 
 $GLOBALS['robots'] = array(/*{{{*/
+	'Havij' => 'Havij Advanced SQL Injection',
 	'ilial/Nutch' => 'ilial/Nutch',
 	'nutch/Nutch' => 'nutch/Nutch',
 	'Mirago-Test-Robot' => 'Mirago-Test-Robot',

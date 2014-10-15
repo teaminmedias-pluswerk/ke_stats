@@ -22,13 +22,13 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
-require_once(PATH_tslib.'class.tslib_pibase.php');
+use \TYPO3\CMS\Core\Utility\GeneralUtility;
+
 require_once(PATH_BE_KESTATS.'inc/browsers.inc.php');
 require_once(PATH_BE_KESTATS.'inc/robots.inc.php');
 require_once(PATH_BE_KESTATS.'inc/search_engines.inc.php');
 require_once(PATH_BE_KESTATS.'inc/operating_systems.inc.php');
 require_once(PATH_BE_KESTATS.'inc/constants.inc.php');
-require_once(PATH_BE_KESTATS.'lib/class.tx_kestats_lib.php');
 
 /**
  * Plugin 'statistics counter' for the 'ke_stats' extension.
@@ -37,7 +37,7 @@ require_once(PATH_BE_KESTATS.'lib/class.tx_kestats_lib.php');
  * @package	TYPO3
  * @subpackage	tx_kestats
  */
-class tx_kestats_pi1 extends tslib_pibase {
+class tx_kestats_pi1 extends \TYPO3\CMS\Frontend\Plugin\AbstractPlugin {
 	// Same as class name
 	var $prefixId = 'tx_kestats_pi1';
 
@@ -79,29 +79,29 @@ class tx_kestats_pi1 extends tslib_pibase {
 		$this->search_engines = $GLOBALS['search_engines'];
 		$this->operating_systems = $GLOBALS['operating_systems'];
 		$this->now = time();
-		$lcObj = t3lib_div::makeInstance('tslib_cObj');
+		$lcObj = GeneralUtility::makeInstance('TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer');
 
 			// instantiate the shared library
-		$this->kestatslib = t3lib_div::makeInstance('tx_kestats_lib');
+		$this->kestatslib = GeneralUtility::makeInstance('tx_kestats_lib');
 
 			// ignore this page?
-		if ($this->conf['ignorePages'] && t3lib_div::inList($this->conf['ignorePages'],$GLOBALS['TSFE']->id)) {
+		if ($this->conf['ignorePages'] && GeneralUtility::inList($this->conf['ignorePages'],$GLOBALS['TSFE']->id)) {
 			return '';
 		}
 
 			// init timetracking
 		if ($this->debug_timetracking) {
-			$this->timetracking_start = t3lib_div::milliseconds();
+			$this->timetracking_start = GeneralUtility::milliseconds();
 		}
 
 			// ignore calls without user agent where the remote address is like the server address
 			// this is necessary to ignore certain types of calls, for example ajax calls to typo3 pages
-		if ( trim(t3lib_div::getIndpEnv('HTTP_USER_AGENT')) == ''
+		if ( trim(GeneralUtility::getIndpEnv('HTTP_USER_AGENT')) == ''
 			&& isset($_SERVER['SERVER_ADDR'])
-			&& $_SERVER['SERVER_ADDR'] == t3lib_div::getIndpEnv('REMOTE_ADDR')) {
+			&& $_SERVER['SERVER_ADDR'] == GeneralUtility::getIndpEnv('REMOTE_ADDR')) {
 			return '';
 		}
-		
+
 			// another check to ignore ajax calls
 		if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])
 		   && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
@@ -119,7 +119,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 			// get "real" pagetitle (not touched by any extension)
 			// $element_title = $GLOBALS['TSFE']->page['title'];
 		$element_title = $GLOBALS['TSFE']->rootLine[sizeof($GLOBALS['TSFE']->rootLine)-1]['title'];
-		$element_language = t3lib_div::_GP('L') ? intval(t3lib_div::_GP('L')) : 0;
+		$element_language = GeneralUtility::_GP('L') ? intval(GeneralUtility::_GP('L')) : 0;
 
 			// get the extension-manager configuration
 		$this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['ke_stats']);
@@ -134,14 +134,14 @@ class tx_kestats_pi1 extends tslib_pibase {
 		if ($this->extConf['logfileDir']) {
 			$this->extConf['logfileDir'] = trim($this->extConf['logfileDir'], '/');
 			if (!is_dir($this->extConf['logfileDir'])) {
-				$dir_created = t3lib_div::mkdir($this->extConf['logfileDir']);
+				$dir_created = GeneralUtility::mkdir($this->extConf['logfileDir']);
 			} else {
 				$dir_exists = true;
 			}
 
 				// if logfileDir could not be created, don't write a logfile
 			if (!$dir_exists && !$dir_created) {
-				t3lib_div::devLog('Error while creating logfile dir: ' . $this->extConf['logfileDir'], $this->extKey, 1);
+				GeneralUtility::devLog('Error while creating logfile dir: ' . $this->extConf['logfileDir'], $this->extKey, 1);
 				$this->extConf['logfileDir'] = '';
 			}
 		}
@@ -154,8 +154,8 @@ class tx_kestats_pi1 extends tslib_pibase {
 		}
 
 			// do nothing if ipFilter is set and matches the remote ip address
-		if ($this->extConf['ipFilter'] && t3lib_div::cmpIP($this->statData['remote_addr'], $this->extConf['ipFilter'])) {
-			//t3lib_div::devLog('ip filter matching',$this->extKey,0,array($this->statData['remote_addr'], $this->extConf['ipFilter']));
+		if ($this->extConf['ipFilter'] && GeneralUtility::cmpIP($this->statData['remote_addr'], $this->extConf['ipFilter'])) {
+			//GeneralUtility::devLog('ip filter matching',$this->extKey,0,array($this->statData['remote_addr'], $this->extConf['ipFilter']));
 			$this->trackTime('end');
 			$this->logTimeTracking();
 			return '';
@@ -380,10 +380,10 @@ class tx_kestats_pi1 extends tslib_pibase {
 				foreach ($extConfList as $extKey => $extConf) {
 					// get the element uid
 					if (!empty($extConf['uidParameterWrap'])) {
-						$extPiVars = t3lib_div::_GET($extConf['uidParameterWrap']);
+						$extPiVars = GeneralUtility::_GET($extConf['uidParameterWrap']);
 						$element_uid = intval($extPiVars[$extConf['uidParameter']]);
 					} else {
-						$element_uid = intval(t3lib_div::_GET($extConf['uidParameter']));
+						$element_uid = intval(GeneralUtility::_GET($extConf['uidParameter']));
 					}
 
 						// count this element if a single view uid is given
@@ -402,7 +402,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 								$element_pid = $row[$extConf['pidField']];
 								$element_title = $row[$extConf['titleField']];
 								$element_type = $GLOBALS['TSFE']->type;
-								$element_language = t3lib_div::_GP('L') ? intval(t3lib_div::_GP('L')) : 0;
+								$element_language = GeneralUtility::_GP('L') ? intval(GeneralUtility::_GP('L')) : 0;
 								$category = $extKey;
 								$this->increaseCounter($category,'element_uid,element_pid,element_language,element_type,year,month',$element_title,$element_uid,$element_pid,$element_language,$element_type,STAT_TYPE_EXTENSION);
 							}
@@ -432,7 +432,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 *
 	 * example for usage of the API:
 	 *
-	 * $keStatsObj = t3lib_div::getUserObj('EXT:ke_stats/pi1/class.tx_kestats_pi1.php:tx_kestats_pi1');
+	 * $keStatsObj = GeneralUtility::getUserObj('EXT:ke_stats/pi1/class.tx_kestats_pi1.php:tx_kestats_pi1');
 	 * $keStatsObj->initApi();
 	 * $keStatsObj->increaseCounter('my_extension','element_title,year,month',$title_of_the_element_i_want_to_count,$uid_of_the_element_i_want_to_count,$pid_where_to_save_the_data,$language_uid_of_the_element_i_want_to_count,0,'extension');
 	 * unset($keStatsObj);
@@ -451,7 +451,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 		$this->getData();
 
 		// instantiate the shared library
-		$this->kestatslib = t3lib_div::makeInstance('tx_kestats_lib');
+		$this->kestatslib = GeneralUtility::makeInstance('tx_kestats_lib');
 	}
 
 	/**
@@ -511,7 +511,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 */
 	function trackTime($desc = '') {
 		if ($this->debug_timetracking) {
-			$this->timetracking[$desc] = t3lib_div::milliseconds() - $this->timetracking_start;
+			$this->timetracking[$desc] = GeneralUtility::milliseconds() - $this->timetracking_start;
 		}
 	}
 
@@ -523,7 +523,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 */
 	function logTimeTracking() {
 		if ($this->debug_timetracking) {
-			t3lib_div::devLog('timetracking', $this->extKey, 0, $this->timetracking);
+			GeneralUtility::devLog('timetracking', $this->extKey, 0, $this->timetracking);
 		}
 	}
 
@@ -576,11 +576,11 @@ class tx_kestats_pi1 extends tslib_pibase {
 	 */
 	function getData() {
 			// get the environment data
-		$this->statData['http_host'] = $this->sanitizeData(t3lib_div::getIndpEnv('HTTP_HOST'));
-		$this->statData['http_referer'] = $this->sanitizeData(t3lib_div::getIndpEnv('HTTP_REFERER'));
-		$this->statData['http_user_agent'] = $this->sanitizeData(trim(t3lib_div::getIndpEnv('HTTP_USER_AGENT')));
-		$this->statData['remote_addr'] = $this->sanitizeData(t3lib_div::getIndpEnv('REMOTE_ADDR'));
-		$this->statData['request_uri'] = $this->sanitizeData(t3lib_div::getIndpEnv('REQUEST_URI'));
+		$this->statData['http_host'] = $this->sanitizeData(GeneralUtility::getIndpEnv('HTTP_HOST'));
+		$this->statData['http_referer'] = $this->sanitizeData(GeneralUtility::getIndpEnv('HTTP_REFERER'));
+		$this->statData['http_user_agent'] = $this->sanitizeData(trim(GeneralUtility::getIndpEnv('HTTP_USER_AGENT')));
+		$this->statData['remote_addr'] = $this->sanitizeData(GeneralUtility::getIndpEnv('REMOTE_ADDR'));
+		$this->statData['request_uri'] = $this->sanitizeData(GeneralUtility::getIndpEnv('REQUEST_URI'));
 
 			// collect the time information
 		$this->getTimeData();
@@ -708,15 +708,15 @@ class tx_kestats_pi1 extends tslib_pibase {
 				$charset = strtoupper(substr($query_arr[$i],3,strlen($query_arr[$i])));
 			}
 		}
-		
+
 		$keywords = $keys;
-		
+
 		// This is obsolete, keeping it in the code (commented) since I didn't test with
 		// non-UTF-8 sites
 		//if($charset == "UTF-8") {
 			//$keywords = utf8_decode($keys);
 		//}
-		
+
 		$trans = array (':' => "", '"' => "", "'" => "", "<" => "", ">" => "", " -" => "", "(" => "", ")" => "", "~" => "", "*" => "");
 		return strtr($keywords, $trans);
 	}
@@ -784,7 +784,7 @@ class tx_kestats_pi1 extends tslib_pibase {
 		$valListCnt = count($valueList);
 		foreach ($arr as $key => $value)	{
 			if (!$valListCnt || in_array($key, $valueList))	{
-				$str .= $wrapChar . (string)$key.trim(': '.t3lib_div::fixed_lgd_cs(str_replace("\n",'|',(string)$value), $valueLength)) . $wrapChar . ';';
+				$str .= $wrapChar . (string)$key.trim(': '.GeneralUtility::fixed_lgd_cs(str_replace("\n",'|',(string)$value), $valueLength)) . $wrapChar . ';';
 			}
 		}
 		return $str;

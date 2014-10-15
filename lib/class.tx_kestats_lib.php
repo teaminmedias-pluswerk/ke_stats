@@ -23,6 +23,8 @@
  *  This copyright notice MUST APPEAR in all copies of the script!
  * ************************************************************* */
 
+use \TYPO3\CMS\Core\Utility\GeneralUtility;
+
 /**
  * Shared library 'ke_stats' extension.
  *
@@ -88,7 +90,7 @@ class tx_kestats_lib {
 		// before submitting it to the queue or updatign it directly
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyStatDataBeforeQueue'])) {
 			foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyStatDataBeforeQueue'] as $_classRef) {
-				$_procObj = & t3lib_div::getUserObj($_classRef);
+				$_procObj = & GeneralUtility::getUserObj($_classRef);
 				$_procObj->modifyStatDataBeforeQueue(
 						$category,
 						$compareFieldList,
@@ -178,7 +180,7 @@ class tx_kestats_lib {
 		}
 
 		if ($pageUid) {
-			$startTime = t3lib_div::milliseconds();
+			$startTime = GeneralUtility::milliseconds();
 
 			// in the overview page we display 13 month
 			$fromToArray['from_year'] = date('Y') - 1;
@@ -253,7 +255,7 @@ class tx_kestats_lib {
 			 */
 
 			// some time information ...
-			$runningTime = round((t3lib_div::milliseconds() - $startTime) / 1000, 1);
+			$runningTime = round((GeneralUtility::milliseconds() - $startTime) / 1000, 1);
 			// $overviewPageData['info'] = '<p class="update_information">' . $GLOBALS['LANG']->getLL('last_update') . date(UPDATED_UNTIL_DATEFORMAT);
 			// $overviewPageData['info'] .= ' in ' . $runningTime . ' s.<p>';
 			$overviewPageData['tstamp'] = time();
@@ -326,7 +328,7 @@ class tx_kestats_lib {
 				// hook for custom db query
 				if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['getStatResultsDBQuery'])) {
 					foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['getStatResultsDBQuery'] as $_classRef) {
-						$_procObj = & t3lib_div::getUserObj($_classRef);
+						$_procObj = & GeneralUtility::getUserObj($_classRef);
 						$where_clause = $_procObj->getStatResultsDBQuery($where_clause, $this);
 					}
 				}
@@ -341,7 +343,7 @@ class tx_kestats_lib {
 
 					if ($GLOBALS['TYPO3_DB']->sql_num_rows($res)) {
 						$cacheRow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
-						$rows = t3lib_div::xml2array($cacheRow['result']);
+						$rows = GeneralUtility::xml2array($cacheRow['result']);
 
 						// found cache
 						if (!is_array($rows)) {
@@ -357,7 +359,7 @@ class tx_kestats_lib {
 						// write the result to the cache
 						// do this only if a month and a year has been selected
 						if (count($rows) && $this->extConf['enableBackendModuleCaching']) {
-							$result = t3lib_div::array2xml($rows);
+							$result = GeneralUtility::array2xml($rows);
 
 								// cache entries may get quite big ...
 							$GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_kestats_cache', array(
@@ -439,7 +441,7 @@ class tx_kestats_lib {
 		}
 
 
-		$orderParts = t3lib_div::trimExplode(' ', $orderBy);
+		$orderParts = GeneralUtility::trimExplode(' ', $orderBy);
 		// after manual grouping we have to sort the array again
 		// but only if $orderBy is set to 'counter' AND $statCategory is not set to a constant of the overview-page
 		if($orderParts[0] == 'counter' && $statCategory != CATEGORY_PAGES && $statCategory != CATEGORY_VISITS_OVERALL) {
@@ -607,7 +609,7 @@ class tx_kestats_lib {
 			// before creating a new counter (e.g. processing the additional data)
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyStatDataBeforeNewCounter'])) {
 				foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyStatDataBeforeNewCounter'] as $_classRef) {
-					$_procObj = & t3lib_div::getUserObj($_classRef);
+					$_procObj = & GeneralUtility::getUserObj($_classRef);
 					$insertFields = $_procObj->modifyStatDataBeforeNewCounter($insertFields, $additionalData, $this);
 				}
 			}
@@ -656,7 +658,7 @@ class tx_kestats_lib {
 		// hook for individual modifications of the data
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyGetStatEntryWhereClause'])) {
 			foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyGetStatEntryWhereClause'] as $_classRef) {
-				$_procObj = & t3lib_div::getUserObj($_classRef);
+				$_procObj = & GeneralUtility::getUserObj($_classRef);
 				$_procObj->modifyGetStatEntryWhereClause(
 						$compareFieldList,
 						$parent_uid,

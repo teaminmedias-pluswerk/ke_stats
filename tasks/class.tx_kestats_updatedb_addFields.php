@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2013 Jonathan Heilmann <mail@jonathan-heilmann.de>
+ *  (c) 2013-2014 Jonathan Heilmann <mail@jonathan-heilmann.de>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -33,11 +33,20 @@ $GLOBALS['LANG']->includeLLFile('EXT:ke_stats/tasks/locallang.xml');
  * @package	TYPO3
  * @subpackage	tx_kestats
  */
-class tx_kestats_updatedb_addFields implements tx_scheduler_AdditionalFieldProvider {
-	public function getAdditionalFields(array &$taskInfo, $task, tx_scheduler_Module $parentObject) {
+class tx_kestats_updatedb_addFields implements \TYPO3\CMS\Scheduler\AdditionalFieldProviderInterface {
+
+	/**
+	 * Gets additional fields to render in the form to add/edit a task
+	 *
+	 * @param array $taskInfo Values of the fields from the add/edit task form
+	 * @param \TYPO3\CMS\Scheduler\Task\AbstractTask $task The task object being edited. Null when adding a task!
+	 * @param \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController $schedulerModule Reference to the scheduler backend module
+	 * @return array
+	 */
+	public function getAdditionalFields(array &$taskInfo, $task, \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController $schedulerModule) {
 			//preset maxExecTime
 		if (empty($taskInfo['maxExecTime'])) {
-			if($parentObject->CMD == 'edit') {
+			if($schedulerModule->CMD == 'edit') {
 				$taskInfo['maxExecTime'] = $task->maxExecTime;
 			} else {
 			   $taskInfo['maxExecTime'] = '';
@@ -57,12 +66,26 @@ class tx_kestats_updatedb_addFields implements tx_scheduler_AdditionalFieldProvi
 		return $additionalFields;
 	}
 
-	public function validateAdditionalFields(array &$submittedData, tx_scheduler_Module $parentObject) {
+	/**
+	 * Validates the additional fields' values
+	 *
+	 * @param array $submittedData An array containing the data submitted by the add/edit task form
+	 * @aram \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController $schedulerModule Reference to the scheduler backend module
+	 * @return void
+	 */
+	public function validateAdditionalFields(array &$submittedData, \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController $schedulerModule) {
 		$submittedData['maxExecTime'] = trim($submittedData['maxExecTime']);
 		return true;
 	}
 
-	public function saveAdditionalFields(array $submittedData, tx_scheduler_Task $task) {
+	/**
+	 * Takes care of saving the additional fields' values in the task's object
+	 *
+	 * @param array $submittedData An array containing the data submitted by the add/edit task form
+	 * @param \TYPO3\CMS\Scheduler\Task\AbstractTask $task Reference to the scheduler backend module
+	 * @return void
+	 */
+	public function saveAdditionalFields(array $submittedData, \TYPO3\CMS\Scheduler\Task\AbstractTask $task) {
 		$task->maxExecTime = $submittedData['maxExecTime'];
 	}
 }

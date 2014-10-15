@@ -55,9 +55,9 @@ $EXT_DIR = dirname(dirname(PATH_thisScript));
 require_once($EXT_DIR.'/lib/class.tx_kestats_lib.php');
 
 	// instantiate the shared library
-$kestatslib = t3lib_div::makeInstance('tx_kestats_lib');
+$kestatslib = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_kestats_lib');
 
-$startTime = t3lib_div::milliseconds();
+$startTime = \TYPO3\CMS\Core\Utility\GeneralUtility::milliseconds();
 $oldestEntry = false;
 $counter = 0;
 $counter_invalid = 0;
@@ -99,7 +99,7 @@ do {
 		$GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_kestats_queue', 'uid=' . $oldestEntry['uid']);
 	}
 
-	$runningTime = t3lib_div::milliseconds() - $startTime;
+	$runningTime = \TYPO3\CMS\Core\Utility\GeneralUtility::milliseconds() - $startTime;
 
 } while ($oldestEntry && ($runningTime < MAX_EXECUTION_TIME));
 

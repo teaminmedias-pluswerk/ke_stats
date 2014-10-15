@@ -1,3 +1,6 @@
+Version 1.2.0 (2014/10)
+* task: make ke_stats compatible to TYPO3 6.2. https://forge.typo3.org/issues/57790. Thanks to Jonathan Heilmann.
+
 Version 1.1.2 (2014/01)
 * security fix! please update!
 * New feature: scheduler task. Thanks to Jonathan Heilmann.

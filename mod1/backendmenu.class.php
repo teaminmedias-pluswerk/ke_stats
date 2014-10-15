@@ -22,6 +22,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
+use \TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * This class helps generating menus for the typo3 backend, fx. nice tab menus
@@ -39,10 +40,10 @@ class backendMenu {
 	/**
 	 * Generates a TYPO3 backend module tab menu
 	 * allowedValues: see getSelectedValue
-	 * 
-	 * @param mixed $menuArray 
-	 * @param string $selectedValue 
-	 * @param string $menuName 
+	 *
+	 * @param mixed $menuArray
+	 * @param string $selectedValue
+	 * @param string $menuName
 	 * @param string $additionalParams
 	 * @param array $allowedValues
 	 * @return string
@@ -59,7 +60,7 @@ class backendMenu {
 			$menuHTML .= '<li ';
 			if ($selectedValue == $menuValue) $menuHTML .= 'class="selected" ';
 			$menuHTML .= '><a ';
-			$menuHTML .= 'href="index.php?id='.t3lib_div::_GET('id').'&'.$menuName.'='.$menuValue;
+			$menuHTML .= 'href="index.php?id='.GeneralUtility::_GET('id').'&'.$menuName.'='.$menuValue;
 			$menuHTML .= $additionalParams;
 			$menuHTML .= '">';
 			$menuHTML .= $menuDescription;
@@ -70,18 +71,18 @@ class backendMenu {
 	}/*}}}*/
 
 	/**
-	 * generateLinkMenu 
+	 * generateLinkMenu
 	 *
 	 * Generate a menu with simple links
 	 *
 	 * this is important for the csv export links:
 	 * additionalParams are APPENDED so we can use them to overwrite given values
 	 * adds a "descr"-parameter to the link which contains the linktext
-	 * 
-	 * @param mixed $menuArray 
-	 * @param string $menuName 
-	 * @param string $additionalParams 
-	 * @param array $allowedValues 
+	 *
+	 * @param mixed $menuArray
+	 * @param string $menuName
+	 * @param string $additionalParams
+	 * @param array $allowedValues
 	 * @access public
 	 * @return string
 	 */
@@ -93,7 +94,7 @@ class backendMenu {
 		}
 		foreach ($menuArray as $menuValue => $menuDescription) {
 			$menuHTML .= '<a ';
-			$menuHTML .= 'href="index.php?id=' . t3lib_div::_GET('id') . '&' . $menuName . '=' . $menuValue;
+			$menuHTML .= 'href="index.php?id=' . GeneralUtility::_GET('id') . '&' . $menuName . '=' . $menuValue;
 			$menuHTML .= '&' . $additionalParams;
 			$menuHTML .= '&descr=' . $menuDescription;
 			$menuHTML .= '">';
@@ -105,10 +106,10 @@ class backendMenu {
 
 	/**
 	 * Generates a TYPO3 backend module dropdown menu
-	 * 
-	 * @param mixed $menuArray 
-	 * @param string $selectedValue 
-	 * @param string $menuName 
+	 *
+	 * @param mixed $menuArray
+	 * @param string $selectedValue
+	 * @param string $menuName
 	 * @param string $additionalParams
 	 * @return string
 	 */
@@ -129,12 +130,12 @@ class backendMenu {
 			}
 			$allowedValues[] = $menuValue;
 		}
-		
+
 		// get the selected value for this menu
 		$selectedValue = $this->getSelectedValue($menuName, $allowedValues);
 
 		// render the form
-		$formURL = 'index.php?id='.t3lib_div::_GET('id').$additionalParams;
+		$formURL = 'index.php?id='.GeneralUtility::_GET('id').$additionalParams;
 		$formName = 'form_'.$menuName;
 		$menuHTML = '<form name="'.$formName.'" id="'.$formName.'" method="post" action="'.$formURL.'">';
 		$menuHTML .= '<select name="'.$menuName.'" size="1" class="basicselect" onchange="document.'.$formName.'.submit();">';
@@ -159,14 +160,14 @@ class backendMenu {
 	 * Returns the selected value from a given menu
 	 * if the allowedValues array is given, the selected value will be checked against its values
 	 * if the value does not exist in the array, the first value in the array will be selected
-	 * 
-	 * @param string $menuName 
-	 * @param array $menuArray 
-	 * @param bool $transformNullValue 
+	 *
+	 * @param string $menuName
+	 * @param array $menuArray
+	 * @param bool $transformNullValue
 	 * @return void
 	 */
 	function getSelectedValue($menuName='default',$allowedValues=array(), $transformNullValue=1) {/*{{{*/
-		$value = t3lib_div::_GP($menuName);
+		$value = GeneralUtility::_GP($menuName);
 		if (empty($value) && $this->tabmenuPresetValues[$menuName]) $value = $this->tabmenuPresetValues[$menuName];
 
 		// check if the selected value really exists in the options
@@ -187,8 +188,8 @@ class backendMenu {
 
 	/**
 	 * Returns the select value of a menu
-	 * 
-	 * @param string $menuName 
+	 *
+	 * @param string $menuName
 	 * @param array $allowedValues
 	 * @return string
 	 */
@@ -206,9 +207,9 @@ class backendMenu {
 
 	/**
 	 * presets values for a given tab menu
-	 * 
-	 * @param mixed $value 
-	 * @param string $menuName 
+	 *
+	 * @param mixed $value
+	 * @param string $menuName
 	 * @access public
 	 * @return void
 	 */
@@ -219,7 +220,7 @@ class backendMenu {
 
 	/**
 	 * sets some additional style sheets
-	 * 
+	 *
 	 * @return string
 	 */
 	function getStyleSheet() {/*{{{*/
@@ -233,7 +234,7 @@ class backendMenu {
 	float:left;
 	margin: .5em 3px 0 0;
 	font-size: 10px;
-	font-weight: bold; 
+	font-weight: bold;
 	border-bottom: 1px solid gray;
 }
 
@@ -242,10 +243,10 @@ class backendMenu {
 	padding: 3px 0;
 	margin: .5em 0 0 0;
 	font-size: 10px;
-	font-weight: bold; 
+	font-weight: bold;
 	border-bottom: 1px solid gray;
 	list-style-type: none;
-	text-align: left; 
+	text-align: left;
 }
 
 .basictab li {
@@ -261,17 +262,17 @@ class backendMenu {
 	border-bottom: none;
 	background-color: #E2E2E9;
 	color: #2d2b2b;
-	
+
 	-moz-border-radius-topleft: 3px;
 	-moz-border-radius-topright: 3px;
 	-moz-border-radius-bottomright: 0px;
 	-moz-border-radius-bottomleft: 0px;
 	-webkit-border-radius: 3px 3px 0px 0px;
 	border-radius: 3px 3px 0px 0px;
-	
+
 	-webkit-box-shadow: inset 0px 1px 0px 0px #ffffff;
 	-moz-box-shadow: inset 0px 1px 0px 0px #ffffff;
-	box-shadow: inset 0px 1px 0px 0px #ffffff; 
+	box-shadow: inset 0px 1px 0px 0px #ffffff;
 }
 
 .basictab li a:visited {
@@ -288,7 +289,7 @@ class backendMenu {
 	color: black;
 }
 
-.basictab li.selected a { 
+.basictab li.selected a {
 	position: relative;
 	top: 1px;
 	padding-top: 4px;

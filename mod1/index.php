@@ -22,29 +22,21 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
+use \TYPO3\CMS\Core\Utility\GeneralUtility;
+
 define('UPDATED_UNTIL_DATEFORMAT', 'd.m.Y, H:i:s');
 
 	// DEFAULT initialization of a module [BEGIN]
 unset($MCONF);
 require_once('conf.php');
 require_once($BACK_PATH.'init.php');
-require_once($BACK_PATH.'template.php');
 
-$LANG->includeLLFile('EXT:ke_stats/mod1/locallang.xml');
-require_once(PATH_t3lib.'class.t3lib_scbase.php');
-$BE_USER->modAccess($MCONF,1);	// This checks permissions and exits if the users has no permission for entry.
+$GLOBALS['LANG']->includeLLFile('EXT:ke_stats/mod1/locallang.xml');
+$GLOBALS['BE_USER']->modAccess($MCONF,1);	// This checks permissions and exits if the users has no permission for entry.
 	// DEFAULT initialization of a module [END]
 
 require_once('backendmenu.class.php');
 require_once('../inc/constants.inc.php');
-
-// Classes for access to the frontend TSconfig
-require_once(PATH_t3lib.'class.t3lib_page.php');
-require_once(PATH_t3lib.'class.t3lib_tstemplate.php');
-require_once(PATH_t3lib.'class.t3lib_tsparser_ext.php');
-
-// shared library
-require_once(PATH_BE_KESTATS.'lib/class.tx_kestats_lib.php');
 
 /**
  * Module 'Statistics' for the 'ke_stats' extension.
@@ -53,7 +45,7 @@ require_once(PATH_BE_KESTATS.'lib/class.tx_kestats_lib.php');
  * @package	TYPO3
  * @subpackage	tx_kestats
  */
-class  tx_kestats_module1 extends t3lib_SCbase {
+class  tx_kestats_module1 extends \TYPO3\CMS\Backend\Module\BaseScriptClass {
 	var $pageinfo;
 	var $tablename = 'tx_kestats_statdata';
 	var $tablenameCache = 'tx_kestats_cache';
@@ -74,12 +66,12 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * @return	void
 	 */
 	function init()	{
-		global $BE_USER,$LANG,$BACK_PATH,$TCA_DESCR,$TCA,$CLIENT,$TYPO3_CONF_VARS;
+		global $BACK_PATH,$TCA_DESCR,$TCA,$CLIENT,$TYPO3_CONF_VARS;
 
 		parent::init();
 
 			// instantiate the shared library
-		$this->kestatslib = t3lib_div::makeInstance('tx_kestats_lib');
+		$this->kestatslib = GeneralUtility::makeInstance('tx_kestats_lib');
 
 			// introduce the backend module to the shared library
 		$this->kestatslib->backendModule_obj = $this;
@@ -97,13 +89,13 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		$this->csvContent[0] = array();
 
 			// check, if we should render a csv-table
-		$this->csvOutput = (t3lib_div::_GET('format') == 'csv') ? true : false;
+		$this->csvOutput = (GeneralUtility::_GET('format') == 'csv') ? true : false;
 
 		// get the module TSconfig
 		// $this->modConf = t3lib_BEfunc::getModTSconfig($this->id);
 
 		/*
-		if (t3lib_div::_GP('clear_all_cache'))	{
+		if (GeneralUtility::_GP('clear_all_cache'))	{
 			$this->include_once[] = PATH_t3lib.'class.t3lib_tcemain.php';
 		}
 		*/
@@ -114,7 +106,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 *
 	 * @return	void
 	 */
-	function menuConfig()	{
+	/*function menuConfig()	{
 		global $LANG;
 		$this->MOD_MENU = Array (
 			'function' => Array (
@@ -124,7 +116,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			)
 		);
 		parent::menuConfig();
-	}
+	}*/
 
 	/**
 	 * Main function of the module.
@@ -132,22 +124,22 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 	 * @return	string
 	 */
 	function main()	{
-		global $BE_USER,$LANG,$BACK_PATH,$TCA_DESCR,$TCA,$CLIENT,$TYPO3_CONF_VARS;
+		global $BACK_PATH,$TCA_DESCR,$TCA,$CLIENT,$TYPO3_CONF_VARS;
 
 			// Access check!
 			// The page will show only if there is a valid page and if this page may be viewed by the user
-		$this->pageinfo = t3lib_BEfunc::readPageAccess($this->id,$this->perms_clause);
+		$this->pageinfo = \TYPO3\CMS\Backend\Utility\BackendUtility::readPageAccess($this->id,$this->perms_clause);
 		$access = is_array($this->pageinfo) ? 1 : 0;
 
-			// || ($BE_USER->user['admin'] && !$this->id)
+			// || ($GLOBALS['BE_USER']->user['admin'] && !$this->id)
 		if (($this->id && $access))	{
 
 				// Draw the header.
-			$this->doc = t3lib_div::makeInstance('mediumDoc');
+			$this->doc = GeneralUtility::makeInstance('TYPO3\CMS\Backend\Template\MediumDocumentTemplate');
 			$this->doc->backPath = $BACK_PATH;
 
 				// initialize tab menu
-			$this->tabmenu = t3lib_div::makeInstance('backendMenu');
+			$this->tabmenu = GeneralUtility::makeInstance('backendMenu');
 			$this->doc->inDocStylesArray['tab_menu'] = $this->tabmenu->getStyleSheet();
 
 				// initialize table
@@ -185,7 +177,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			   ';
 			 */
 
-			$headerSection = $this->doc->getHeader('pages',$this->pageinfo,$this->pageinfo['_thePath']).'<br />'.$LANG->sL('LLL:EXT:lang/locallang_core.xml:labels.path').': '.t3lib_div::fixed_lgd_cs($this->pageinfo['_thePath'],-50);
+			$headerSection = $this->doc->getHeader('pages',$this->pageinfo,$this->pageinfo['_thePath']).'<br />'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:labels.path').': '.GeneralUtility::fixed_lgd_cs($this->pageinfo['_thePath'],-50);
 
 				// Init tab menus
 			$this->tabmenu->initMenu('type','overview');
@@ -198,7 +190,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				// hook for custom initializations
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['backendModuleInit'])) {
 				foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['backendModuleInit'] as $_classRef) {
-					$_procObj = & t3lib_div::getUserObj($_classRef);
+					$_procObj = & GeneralUtility::getUserObj($_classRef);
 					$_procObj->backendModuleInit($this);
 				}
 			}
@@ -257,8 +249,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 					// Render
 				$this->doc->JScode .= '
 							var f = Flotr.draw($(\'container\'), [
-								{ data:pageviews, label:\'' . $LANG->getLL('category_pages_all') . '\', color: \'#0000ff\', points:{show: true} },
-								{ data:visits, label:\'' . $LANG->getLL('category_visits') . '\', color: \'#009933\', points:{show: true} }
+								{ data:pageviews, label:\'' . $GLOBALS['LANG']->getLL('category_pages_all') . '\', color: \'#0000ff\', points:{show: true} },
+								{ data:visits, label:\'' . $GLOBALS['LANG']->getLL('category_visits') . '\', color: \'#009933\', points:{show: true} }
 							],
 							{
 								legend: { backgroundOpacity:0 },
@@ -272,11 +264,11 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				</script>';
 			}
 
-			//$this->content .= $this->doc->startPage($LANG->getLL('title'));
-			//$this->content .= $this->doc->header($LANG->getLL('title'));
+			//$this->content .= $this->doc->startPage($GLOBALS['LANG']->getLL('title'));
+			//$this->content .= $this->doc->header($GLOBALS['LANG']->getLL('title'));
 			$this->content .= '<div class="extensiontitle"><img src="moduleicon.gif" />KE Stats</div>';
 			//$this->content .= $this->doc->spacer(5);
-			//$this->content .= $this->doc->section('',$this->doc->funcMenu($headerSection,t3lib_BEfunc::getFuncMenu($this->id,'SET[function]',$this->MOD_SETTINGS['function'],$this->MOD_MENU['function'])));
+			//$this->content .= $this->doc->section('',$this->doc->funcMenu($headerSection,TYPO3\CMS\Backen\Utility\BackendUtility::getFuncMenu($this->id,'SET[function]',$this->MOD_SETTINGS['function'],$this->MOD_MENU['function'])));
 			//$this->content .= $this->doc->divider(5);
 
 				// get the extension-manager configuration
@@ -299,7 +291,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
 				while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
-					$typesArray[$row['type']] = $LANG->getLL('type_'.$row['type']) ? $LANG->getLL('type_'.$row['type']) : $row['type'];
+					$typesArray[$row['type']] = $GLOBALS['LANG']->getLL('type_'.$row['type']) ? $GLOBALS['LANG']->getLL('type_'.$row['type']) : $row['type'];
 				}
 			}
 
@@ -316,15 +308,15 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				// on pages where you click on "extension" and there are no
 				// elements
 			$typesArray = array(
-				'overview' => $LANG->getLL('overview'),
-				STAT_TYPE_PAGES => $LANG->getLL('type_' . STAT_TYPE_PAGES),
-				STAT_TYPE_EXTENSION => $LANG->getLL('type_' . STAT_TYPE_EXTENSION),
-				'csvdownload' => $LANG->getLL('csvdownload')
+				'overview' => $GLOBALS['LANG']->getLL('overview'),
+				STAT_TYPE_PAGES => $GLOBALS['LANG']->getLL('type_' . STAT_TYPE_PAGES),
+				STAT_TYPE_EXTENSION => $GLOBALS['LANG']->getLL('type_' . STAT_TYPE_EXTENSION),
+				'csvdownload' => $GLOBALS['LANG']->getLL('csvdownload')
 			);
 
 				// Put "Tracking" tab at the end display it only if tracking is activated
 			if ($this->extConf['enableTracking']) {
-				$typesArray[STAT_TYPE_TRACKING] = $LANG->getLL('type_' . STAT_TYPE_TRACKING);
+				$typesArray[STAT_TYPE_TRACKING] = $GLOBALS['LANG']->getLL('type_' . STAT_TYPE_TRACKING);
 			}
 
 				// the query to filter the elements based on the selected page in the pagetree
@@ -362,86 +354,86 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 						// render tab menu: monthly or details of one month
 					$this->content .= $this->tabmenu->generateTabMenu(array(
-								'list_monthly_process' => $LANG->getLL('list_full'),
-								'list_details_of_a_month' => $LANG->getLL('list_details'),
+								'list_monthly_process' => $GLOBALS['LANG']->getLL('list_full'),
+								'list_details_of_a_month' => $GLOBALS['LANG']->getLL('list_details'),
 								),'list_type');
 
 					if ($this->tabmenu->getSelectedValue('list_type') == 'list_monthly_process') {
 							// render tab menu: category
 						$this->content .= $this->tabmenu->generateTabMenu(array(
-									'category_monthly_pages' => $LANG->getLL('category_monthly_pages'),
-									'category_monthly_pages_fe_users' => $LANG->getLL('category_monthly_pages_fe_users'),
-									'category_monthly_visits' => $LANG->getLL('category_monthly_visits'),
-									'category_monthly_visits_fe_users' => $LANG->getLL('category_monthly_visits_fe_users')
+									'category_monthly_pages' => $GLOBALS['LANG']->getLL('category_monthly_pages'),
+									'category_monthly_pages_fe_users' => $GLOBALS['LANG']->getLL('category_monthly_pages_fe_users'),
+									'category_monthly_visits' => $GLOBALS['LANG']->getLL('category_monthly_visits'),
+									'category_monthly_visits_fe_users' => $GLOBALS['LANG']->getLL('category_monthly_visits_fe_users')
 									),'list_type_category_monthly');
 					} else if ($this->tabmenu->getSelectedValue('list_type') == 'list_details_of_a_month') {
 							// render tab menu: category
 						$this->content .= $this->tabmenu->generateTabMenu(array(
-									'category_pages' => $LANG->getLL('category_pages'),
-									'category_time' => $LANG->getLL('category_time'),
-									'category_referers' => $LANG->getLL('category_referers'),
-									'category_user_agents' => $LANG->getLL('category_user_agents'),
-									'category_other' => $LANG->getLL('category_other')
+									'category_pages' => $GLOBALS['LANG']->getLL('category_pages'),
+									'category_time' => $GLOBALS['LANG']->getLL('category_time'),
+									'category_referers' => $GLOBALS['LANG']->getLL('category_referers'),
+									'category_user_agents' => $GLOBALS['LANG']->getLL('category_user_agents'),
+									'category_other' => $GLOBALS['LANG']->getLL('category_other')
 									),'list_type_category');
 						if ($this->tabmenu->getSelectedValue('list_type_category') == 'category_pages') {
 								// render tab menu: pages
 							$this->content .= $this->tabmenu->generateTabMenu(array(
-										CATEGORY_PAGES => $LANG->getLL('category_pages_all'),
-										CATEGORY_PAGES_FEUSERS => $LANG->getLL('category_pages_feusers')
+										CATEGORY_PAGES => $GLOBALS['LANG']->getLL('category_pages_all'),
+										CATEGORY_PAGES_FEUSERS => $GLOBALS['LANG']->getLL('category_pages_feusers')
 										),'category_pages');
 						}
 						if ($this->tabmenu->getSelectedValue('list_type_category') == 'category_referers') {
 								// render tab menu: referers
 							$this->content .= $this->tabmenu->generateTabMenu(array(
-										CATEGORY_REFERERS_EXTERNAL_WEBSITES => $LANG->getLL('category_referers_websites'),
-										CATEGORY_REFERERS_SEARCHENGINES => $LANG->getLL('category_referers_search_engines'),
-										CATEGORY_SEARCH_STRINGS => $LANG->getLL('category_search_strings')
+										CATEGORY_REFERERS_EXTERNAL_WEBSITES => $GLOBALS['LANG']->getLL('category_referers_websites'),
+										CATEGORY_REFERERS_SEARCHENGINES => $GLOBALS['LANG']->getLL('category_referers_search_engines'),
+										CATEGORY_SEARCH_STRINGS => $GLOBALS['LANG']->getLL('category_search_strings')
 										),'category_referers');
 						}
 						if ($this->tabmenu->getSelectedValue('list_type_category') == 'category_time') {
 								// render tab menu: time
 							$this->content .= $this->tabmenu->generateTabMenu(array(
-										'category_time_hits' => $LANG->getLL('category_time_hits'),
-										'category_time_visits' => $LANG->getLL('category_time_visits'),
-										'category_time_visits_feusers' => $LANG->getLL('category_time_visits_feusers'),
+										'category_time_hits' => $GLOBALS['LANG']->getLL('category_time_hits'),
+										'category_time_visits' => $GLOBALS['LANG']->getLL('category_time_visits'),
+										'category_time_visits_feusers' => $GLOBALS['LANG']->getLL('category_time_visits_feusers'),
 										),'category_time_type');
 							if ($this->tabmenu->getSelectedValue('category_time_type') == 'category_time_hits') {
 									// render tab menu: time hits
 								$this->content .= $this->tabmenu->generateTabMenu(array(
-											CATEGORY_PAGES_OVERALL_DAY_OF_MONTH => $LANG->getLL('category_day_of_month'),
-											CATEGORY_PAGES_OVERALL_DAY_OF_WEEK => $LANG->getLL('category_day_of_week'),
-											CATEGORY_PAGES_OVERALL_HOUR_OF_DAY => $LANG->getLL('category_hour_of_day'),
+											CATEGORY_PAGES_OVERALL_DAY_OF_MONTH => $GLOBALS['LANG']->getLL('category_day_of_month'),
+											CATEGORY_PAGES_OVERALL_DAY_OF_WEEK => $GLOBALS['LANG']->getLL('category_day_of_week'),
+											CATEGORY_PAGES_OVERALL_HOUR_OF_DAY => $GLOBALS['LANG']->getLL('category_hour_of_day'),
 											),'category_time_hits');
 							} else if ($this->tabmenu->getSelectedValue('category_time_type') == 'category_time_visits') {
 									// render tab menu: time visits
 								$this->content .= $this->tabmenu->generateTabMenu(array(
-											CATEGORY_VISITS_OVERALL_DAY_OF_MONTH => $LANG->getLL('category_visits_day_of_month'),
-											CATEGORY_VISITS_OVERALL_DAY_OF_WEEK => $LANG->getLL('category_visits_day_of_week'),
-											CATEGORY_VISITS_OVERALL_HOUR_OF_DAY => $LANG->getLL('category_visits_hour_of_day'),
+											CATEGORY_VISITS_OVERALL_DAY_OF_MONTH => $GLOBALS['LANG']->getLL('category_visits_day_of_month'),
+											CATEGORY_VISITS_OVERALL_DAY_OF_WEEK => $GLOBALS['LANG']->getLL('category_visits_day_of_week'),
+											CATEGORY_VISITS_OVERALL_HOUR_OF_DAY => $GLOBALS['LANG']->getLL('category_visits_hour_of_day'),
 											),'category_time_visits');
 							} else if ($this->tabmenu->getSelectedValue('category_time_type') == 'category_time_visits_feusers') {
 									// render tab menu: time visits logged-in
 								$this->content .= $this->tabmenu->generateTabMenu(array(
-											CATEGORY_VISITS_OVERALL_FEUSERS_DAY_OF_MONTH => $LANG->getLL('category_visits_day_of_month_feusers'),
-											CATEGORY_VISITS_OVERALL_FEUSERS_DAY_OF_WEEK => $LANG->getLL('category_visits_day_of_week_feusers'),
-											CATEGORY_VISITS_OVERALL_FEUSERS_HOUR_OF_DAY => $LANG->getLL('category_visits_hour_of_day_feusers'),
+											CATEGORY_VISITS_OVERALL_FEUSERS_DAY_OF_MONTH => $GLOBALS['LANG']->getLL('category_visits_day_of_month_feusers'),
+											CATEGORY_VISITS_OVERALL_FEUSERS_DAY_OF_WEEK => $GLOBALS['LANG']->getLL('category_visits_day_of_week_feusers'),
+											CATEGORY_VISITS_OVERALL_FEUSERS_HOUR_OF_DAY => $GLOBALS['LANG']->getLL('category_visits_hour_of_day_feusers'),
 											),'category_time_visits_feusers');
 							}
 						}
 						if ($this->tabmenu->getSelectedValue('list_type_category') == 'category_user_agents') {
 								// render tab menu: user agents
 							$this->content .= $this->tabmenu->generateTabMenu(array(
-										CATEGORY_BROWSERS => $LANG->getLL('category_browsers'),
-										CATEGORY_ROBOTS => $LANG->getLL('category_robots'),
-										CATEGORY_UNKNOWN_USER_AGENTS => $LANG->getLL('category_unknown_user_agents'),
+										CATEGORY_BROWSERS => $GLOBALS['LANG']->getLL('category_browsers'),
+										CATEGORY_ROBOTS => $GLOBALS['LANG']->getLL('category_robots'),
+										CATEGORY_UNKNOWN_USER_AGENTS => $GLOBALS['LANG']->getLL('category_unknown_user_agents'),
 										),'category_user_agents');
 						}
 						if ($this->tabmenu->getSelectedValue('list_type_category') == 'category_other') {
 								// render tab menu: other
 							$this->content .= $this->tabmenu->generateTabMenu(array(
-										CATEGORY_OPERATING_SYSTEMS => $LANG->getLL('category_operating_systems'),
-										CATEGORY_IP_ADRESSES => $LANG->getLL('category_ip_addresses'),
-										'category_hosts' => $LANG->getLL('category_hosts')
+										CATEGORY_OPERATING_SYSTEMS => $GLOBALS['LANG']->getLL('category_operating_systems'),
+										CATEGORY_IP_ADRESSES => $GLOBALS['LANG']->getLL('category_ip_addresses'),
+										'category_hosts' => $GLOBALS['LANG']->getLL('category_hosts')
 										),'category_other');
 						}
 					}
@@ -455,7 +447,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 						while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
 								// get the tabname for the extension from page TSconfig
 								// if it is not set, get it from Locallang or from the database itself
-							$tabname = $LANG->getLL('extension_'.$row['category']) ? $LANG->getLL('extension_'.$row['category']) : $row['category'];
+							$tabname = $GLOBALS['LANG']->getLL('extension_'.$row['category']) ? $GLOBALS['LANG']->getLL('extension_'.$row['category']) : $row['category'];
 							$extensionTypesArray[$row['category']] = $tabname;
 							$this->allowedExtensionTypes[] = $row['category'];
 						}
@@ -472,17 +464,17 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				// Add info about the statistic type to the csv table
 				// Current page title
 			if ($this->id) {
-				$row = t3lib_BEfunc::getRecord('pages',$this->id);
-				$pagetitle = t3lib_BEfunc::getRecordTitle('pages',$row,1);
-				$this->content .= '<p style=\'margin-top:10px;\'>'.$LANG->getLL('statistics_for').' <strong>'.$pagetitle.'</strong> '.$LANG->getLL('and_subpages').'</p>';
-				$this->addCsvCol($LANG->getLL('statistics_for').' '.$pagetitle.' '.$LANG->getLL('and_subpages'));
+				$row = TYPO3\CMS\Backend\Utility\BackendUtility::getRecord('pages',$this->id);
+				$pagetitle = TYPO3\CMS\Backend\Utility\BackendUtility::getRecordTitle('pages',$row,1);
+				$this->content .= '<p style=\'margin-top:10px;\'>'.$GLOBALS['LANG']->getLL('statistics_for').' <strong>'.$pagetitle.'</strong> '.$GLOBALS['LANG']->getLL('and_subpages').'</p>';
+				$this->addCsvCol($GLOBALS['LANG']->getLL('statistics_for').' '.$pagetitle.' '.$GLOBALS['LANG']->getLL('and_subpages'));
 			} else {
-				$this->content .= '<p style=\'margin-top:10px;\'>'.$LANG->getLL('all_pages').'</p>';
-				$this->addCsvCol($LANG->getLL('all_pages'));
+				$this->content .= '<p style=\'margin-top:10px;\'>'.$GLOBALS['LANG']->getLL('all_pages').'</p>';
+				$this->addCsvCol($GLOBALS['LANG']->getLL('all_pages'));
 			}
 
 				// description of the statistic type
-			$description = t3lib_div::_GET('descr');
+			$description = GeneralUtility::_GET('descr');
 
 			if ($this->tabmenu->getSelectedValue('list_type') == 'list_details_of_a_month') {
 				if (!empty($description)) {
@@ -502,7 +494,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 				/*
 				$content .= '<a ';
-				$content .= 'href="index.php?id='.t3lib_div::_GET('id').'&type=pages&list_type_category_monthly=category_monthly_pages&type=pages&format=csv';
+				$content .= 'href="index.php?id='.GeneralUtility::_GET('id').'&type=pages&list_type_category_monthly=category_monthly_pages&type=pages&format=csv';
 				$content .= '<h2>' . $GLOBALS['LANG']->getLL('list_details_csv') . '</h2>';
 				$content .= '">';
 				$content .= '</a>';
@@ -510,10 +502,10 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 
 				$this->content .= $this->tabmenu->generateLinkMenu(
 						array(
-							'category_monthly_pages' => $LANG->getLL('category_monthly_pages'),
-							'category_monthly_pages_fe_users' => $LANG->getLL('category_monthly_pages_fe_users'),
-							'category_monthly_visits' => $LANG->getLL('category_monthly_visits'),
-							'category_monthly_visits_fe_users' => $LANG->getLL('category_monthly_visits_fe_users')
+							'category_monthly_pages' => $GLOBALS['LANG']->getLL('category_monthly_pages'),
+							'category_monthly_pages_fe_users' => $GLOBALS['LANG']->getLL('category_monthly_pages_fe_users'),
+							'category_monthly_visits' => $GLOBALS['LANG']->getLL('category_monthly_visits'),
+							'category_monthly_visits_fe_users' => $GLOBALS['LANG']->getLL('category_monthly_visits_fe_users')
 						),
 						'list_type_category_monthly',
 						'&type=pages&format=csv&list_type=list_monthly_process'
@@ -534,8 +526,8 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				$labelPrefix = $GLOBALS['LANG']->getLL('csvdownload_pages') . ' - ';
 				$this->content .= $this->tabmenu->generateLinkMenu(
 					array(
-						CATEGORY_PAGES => $labelPrefix . $LANG->getLL('category_pages_all'),
-						CATEGORY_PAGES_FEUSERS => $labelPrefix . $LANG->getLL('category_pages_feusers')
+						CATEGORY_PAGES => $labelPrefix . $GLOBALS['LANG']->getLL('category_pages_all'),
+						CATEGORY_PAGES_FEUSERS => $labelPrefix . $GLOBALS['LANG']->getLL('category_pages_feusers')
 					),
 					'category_pages',
 					$defaultParams . '&list_type_category=category_pages'
@@ -546,9 +538,9 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				$labelPrefix = $GLOBALS['LANG']->getLL('csvdownload_referer') . ' - ';
 				$this->content .= $this->tabmenu->generateLinkMenu(
 					array(
-						CATEGORY_REFERERS_EXTERNAL_WEBSITES => $labelPrefix . $LANG->getLL('category_referers_websites'),
-						CATEGORY_REFERERS_SEARCHENGINES => $labelPrefix . $LANG->getLL('category_referers_search_engines'),
-						CATEGORY_SEARCH_STRINGS => $labelPrefix . $LANG->getLL('category_search_strings')
+						CATEGORY_REFERERS_EXTERNAL_WEBSITES => $labelPrefix . $GLOBALS['LANG']->getLL('category_referers_websites'),
+						CATEGORY_REFERERS_SEARCHENGINES => $labelPrefix . $GLOBALS['LANG']->getLL('category_referers_search_engines'),
+						CATEGORY_SEARCH_STRINGS => $labelPrefix . $GLOBALS['LANG']->getLL('category_search_strings')
 					),
 					'category_referers',
 					$defaultParams . '&list_type_category=category_referers'
@@ -559,9 +551,9 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				$labelPrefix = $GLOBALS['LANG']->getLL('csvdownload_list_time_hits') . ' - ';
 				$this->content .= $this->tabmenu->generateLinkMenu(
 					array(
-						CATEGORY_PAGES_OVERALL_DAY_OF_MONTH =>  $labelPrefix . $LANG->getLL('category_day_of_month'),
-						CATEGORY_PAGES_OVERALL_DAY_OF_WEEK => $labelPrefix . $LANG->getLL('category_day_of_week'),
-						CATEGORY_PAGES_OVERALL_HOUR_OF_DAY => $labelPrefix . $LANG->getLL('category_hour_of_day'),
+						CATEGORY_PAGES_OVERALL_DAY_OF_MONTH =>  $labelPrefix . $GLOBALS['LANG']->getLL('category_day_of_month'),
+						CATEGORY_PAGES_OVERALL_DAY_OF_WEEK => $labelPrefix . $GLOBALS['LANG']->getLL('category_day_of_week'),
+						CATEGORY_PAGES_OVERALL_HOUR_OF_DAY => $labelPrefix . $GLOBALS['LANG']->getLL('category_hour_of_day'),
 					),
 					'category_time_hits',
 					$defaultParams . '&list_type_category=category_time&category_time_type=category_time_hits'
@@ -572,9 +564,9 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				$labelPrefix = $GLOBALS['LANG']->getLL('csvdownload_list_time_visits') . ' - ';
 				$this->content .= $this->tabmenu->generateLinkMenu(
 					array(
-						CATEGORY_VISITS_OVERALL_DAY_OF_MONTH => $labelPrefix . $LANG->getLL('category_visits_day_of_month'),
-						CATEGORY_VISITS_OVERALL_DAY_OF_WEEK => $labelPrefix . $LANG->getLL('category_visits_day_of_week'),
-						CATEGORY_VISITS_OVERALL_HOUR_OF_DAY => $labelPrefix . $LANG->getLL('category_visits_hour_of_day'),
+						CATEGORY_VISITS_OVERALL_DAY_OF_MONTH => $labelPrefix . $GLOBALS['LANG']->getLL('category_visits_day_of_month'),
+						CATEGORY_VISITS_OVERALL_DAY_OF_WEEK => $labelPrefix . $GLOBALS['LANG']->getLL('category_visits_day_of_week'),
+						CATEGORY_VISITS_OVERALL_HOUR_OF_DAY => $labelPrefix . $GLOBALS['LANG']->getLL('category_visits_hour_of_day'),
 					),
 					'category_time_visits',
 					$defaultParams . '&list_type_category=category_time&category_time_type=category_time_visits'
@@ -585,9 +577,9 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 				$labelPrefix = $GLOBALS['LANG']->getLL('csvdownload_list_time_visits_feusers') . ' - ';
 				$this->content .= $this->tabmenu->generateLinkMenu(
 					array(
-						CATEGORY_VISITS_OVERALL_FEUSERS_DAY_OF_MONTH => $labelPrefix . $LANG->getLL('category_visits_day_of_month_feusers'),
-						CATEGORY_VISITS_OVERALL_FEUSERS_DAY_OF_WEEK => $labelPrefix . $LANG->getLL('category_visits_day_of_week_feusers'),
-						CATEGORY_VISITS_OVERALL_FEUSERS_HOUR_OF_DAY => $labelPrefix . $LANG->getLL('category_visits_hour_of_day_feusers'),
+						CATEGORY_VISITS_OVERALL_FEUSERS_DAY_OF_MONTH => $labelPrefix . $GLOBALS['LANG']->getLL('category_visits_day_of_month_feusers'),
+						CATEGORY_VISITS_OVERALL_FEUSERS_DAY_OF_WEEK => $labelPrefix . $GLOBALS['LANG']->getLL('category_visits_day_of_week_feusers'),
+						CATEGORY_VISITS_OVERALL_FEUSERS_HOUR_OF_DAY => $labelPrefix . $GLOBALS['LANG']->getLL('category_visits_hour_of_day_feusers'),
 					),
 					'category_time_visits_feusers',
 					$defaultParams . '&list_type_category=category_time&category_time_type=category_time_visits_feusers'
@@ -598,9 +590,9 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 					// render tab menu: user agents
 				$this->content .= $this->tabmenu->generateLinkMenu(
 					array(
-						CATEGORY_BROWSERS => $LANG->getLL('category_browsers'),
-						CATEGORY_ROBOTS => $LANG->getLL('category_robots'),
-						CATEGORY_UNKNOWN_USER_AGENTS => $LANG->getLL('category_unknown_user_agents'),
+						CATEGORY_BROWSERS => $GLOBALS['LANG']->getLL('category_browsers'),
+						CATEGORY_ROBOTS => $GLOBALS['LANG']->getLL('category_robots'),
+						CATEGORY_UNKNOWN_USER_AGENTS => $GLOBALS['LANG']->getLL('category_unknown_user_agents'),
 						),
 					'category_user_agents',
 					$defaultParams . '&list_type_category=category_user_agents'
@@ -611,10 +603,10 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 					// render tab menu: other
 
 					// display ip related options only if ip-logging is enabled
-				$linkArray = array( CATEGORY_OPERATING_SYSTEMS => $LANG->getLL('category_operating_systems'));
+				$linkArray = array( CATEGORY_OPERATING_SYSTEMS => $GLOBALS['LANG']->getLL('category_operating_systems'));
 				if ($this->extConf['enableIpLogging']) {
-					$linkArray[CATEGORY_IP_ADRESSES ] = $LANG->getLL('category_ip_addresses');
-					$linkArray['category_hosts'] = $LANG->getLL('category_hosts');
+					$linkArray[CATEGORY_IP_ADRESSES ] = $GLOBALS['LANG']->getLL('category_ip_addresses');
+					$linkArray['category_hosts'] = $GLOBALS['LANG']->getLL('category_hosts');
 				}
 				$this->content .= $this->tabmenu->generateLinkMenu(
 					$linkArray,
@@ -627,10 +619,10 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			$this->content .= $this->moduleContent();
 			// this is not the best solution...but it works //TODO
 			// normally startpage has to be before moduleContent()
-			$this->content .= $this->doc->startPage($LANG->getLL('title'));
+			$this->content .= $this->doc->startPage($GLOBALS['LANG']->getLL('title'));
 
 				// ShortCut
-			if ($BE_USER->mayMakeShortcut())	{
+			if ($GLOBALS['BE_USER']->mayMakeShortcut())	{
 				$this->content.=$this->doc->spacer(20).$this->doc->section('',$this->doc->makeShortcutIcon('id',implode(',',array_keys($this->MOD_MENU)),$this->MCONF['name']));
 			}
 
@@ -638,13 +630,13 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		} else {
 				// If no access or if ID == zero
 
-			$this->doc = t3lib_div::makeInstance('mediumDoc');
+			$this->doc = GeneralUtility::makeInstance('TYPO3\CMS\Backend\Template\MediumDocumentTemplate');
 			$this->doc->backPath = $BACK_PATH;
 
-			$this->content.=$this->doc->startPage($LANG->getLL('title'));
-			$this->content.=$this->doc->header($LANG->getLL('title'));
+			$this->content.=$this->doc->startPage($GLOBALS['LANG']->getLL('title'));
+			$this->content.=$this->doc->header($GLOBALS['LANG']->getLL('title'));
 			$this->content.=$this->doc->spacer(5);
-			$this->content.=$LANG->getLL('please_select_page');
+			$this->content.=$GLOBALS['LANG']->getLL('please_select_page');
 			$this->content.=$this->doc->spacer(10);
 		}
 	}
@@ -772,7 +764,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 			// hook for additional menus
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifySelectorMenu'])) {
 			foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifySelectorMenu'] as $_classRef) {
-				$_procObj = & t3lib_div::getUserObj($_classRef);
+				$_procObj = & GeneralUtility::getUserObj($_classRef);
 				$content = $_procObj->modifySelectorMenu($content, $this);
 			}
 		}
@@ -1456,7 +1448,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 							// hook for individual modifications of the description col
 							if(is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyDescriptionColOfTable'])) {
 								foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['modifyDescriptionColOfTable'] as $_classRef) {
-									$_procObj = &t3lib_div::getUserObj($_classRef);
+									$_procObj = & GeneralUtility::getUserObj($_classRef);
 									$_procObj->modifyDescriptionColOfTable($dataRow, $formatted_data, $special, $this);
 								}
 							}
@@ -1561,7 +1553,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		// hook for additional content above table
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['addContentAboveTable'])) {
 			foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['addContentAboveTable'] as $_classRef) {
-				$_procObj = & t3lib_div::getUserObj($_classRef);
+				$_procObj = & GeneralUtility::getUserObj($_classRef);
 				return $_procObj->addContentAboveTable($resultArray, $type, $category, $this);
 			}
 		}
@@ -1579,7 +1571,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		// hook for additional content above table
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['addContentBelowTable'])) {
 			foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['ke_stats']['addContentBelowTable'] as $_classRef) {
-				$_procObj = & t3lib_div::getUserObj($_classRef);
+				$_procObj = & GeneralUtility::getUserObj($_classRef);
 				return $_procObj->addContentBelowTable($resultArray, $type, $category, $this);
 			}
 		}
@@ -1627,7 +1619,7 @@ class  tx_kestats_module1 extends t3lib_SCbase {
 		$content = '';
 		foreach ($this->csvContent as $row) {
 			//function csvValues($row,$delim=',',$quote='"')
-			$content .= t3lib_div::csvValues($row) . "\n";
+			$content .= GeneralUtility::csvValues($row) . "\n";
 		}
 
 		// I'm not sure if this is necessary for all programs you are importing to, tested with OpenOffice.org
@@ -1780,9 +1772,9 @@ table.ke-stats-table tbody a:visited:after {
 	 */
 	function loadFrontendTSconfig($pageUid=0,$plugin_name='') {
 		if ($pageUid>0) {
-			$sysPageObj = t3lib_div::makeInstance('t3lib_pageSelect');
+			$sysPageObj = GeneralUtility::makeInstance('TYPO3\CMS\Frontend\Page\PageRepository');
 			$rootLine = $sysPageObj->getRootLine($pageUid);
-			$TSObj = t3lib_div::makeInstance('t3lib_tsparser_ext');
+			$TSObj = GeneralUtility::makeInstance('TYPO3\CMS\Core\TypoScript\ExtendedTemplateService');
 			$TSObj->tt_track = 0;
 			$TSObj->init();
 			$TSObj->runThroughTemplates($rootLine);
@@ -1800,7 +1792,7 @@ if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/ke_stat
 }
 
 // Make instance:
-$SOBE = t3lib_div::makeInstance('tx_kestats_module1');
+$SOBE = GeneralUtility::makeInstance('tx_kestats_module1');
 $SOBE->init();
 
 // Include files?

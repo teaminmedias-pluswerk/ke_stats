@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2013 Jonathan Heilmann <mail@jonathan-heilmann.de>
+ *  (c) 2013-2014 Jonathan Heilmann <mail@jonathan-heilmann.de>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,15 +30,19 @@
  * @package	TYPO3
  * @subpackage	tx_kestats
  */
-class tx_kestats_updatedb extends tx_scheduler_Task {
+class tx_kestats_updatedb extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
+	/**
+	 * Task to process cached statdata
+	 *
+	 * @return boolean
+	 */
 	public function execute() {
 		$extKey = 'ke_stats';
 			// include the shared library
-		require_once(t3lib_extMgm::extPath("ke_stats",'lib/class.tx_kestats_lib.php'));
-		//require_once($kestats_dir.'/lib/class.tx_kestats_lib.php');
+		require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('ke_stats','lib/class.tx_kestats_lib.php'));
 
 			// instantiate the shared library
-		$kestatslib = t3lib_div::makeInstance('tx_kestats_lib');
+		$kestatslib = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_kestats_lib');
 
 
 		if($this->maxExecTime) {
@@ -46,7 +50,7 @@ class tx_kestats_updatedb extends tx_scheduler_Task {
 		} else {
 			$maxExecTime = 90000;
 		}
-		$startTime = t3lib_div::milliseconds();
+		$startTime = \TYPO3\CMS\Core\Utility\GeneralUtility::milliseconds();
 		$oldestEntry = false;
 		$counter = 0;
 		$counter_invalid = 0;
@@ -87,7 +91,7 @@ class tx_kestats_updatedb extends tx_scheduler_Task {
 				$GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_kestats_queue', 'uid=' . $oldestEntry['uid']);
 			}
 
-			$runningTime = t3lib_div::milliseconds() - $startTime;
+			$runningTime = \TYPO3\CMS\Core\Utility\GeneralUtility::milliseconds() - $startTime;
 
 		} while ($oldestEntry && ($runningTime < $maxExecTime));
 /*$output =  'Processed ' . $counter . ' entries in ' . ($runningTime / 1000) . ' seconds.' . ' ';
@@ -105,6 +109,11 @@ t3lib_utility_Debug::debug($output);*/
 		return true;
 	}
 
+	/**
+	 * Additional information shown in scheduler tasklist
+	 *
+	 * @return string
+	 */
 	public function getAdditionalInformation() {
         return '';
    }
